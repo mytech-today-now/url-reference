@@ -332,12 +332,13 @@ export class UrlReferenceMapper {
       case 'yaml':
         return yaml.dump(this.mappings);
 
-      case 'csv':
+      case 'csv': {
         const headers = 'Title,URL,Local Path,Last Updated\n';
         const rows = this.mappings.map(m =>
           `"${m.title}","${m.url}","${m.localPath}","${m.lastUpdated || ''}"`
         ).join('\n');
         return headers + rows;
+      }
 
       default:
         throw new Error(`Unsupported export format: ${format}`);

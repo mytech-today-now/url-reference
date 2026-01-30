@@ -4,6 +4,7 @@ import { Command } from 'commander';
 import * as fs from 'fs';
 import { UrlReferenceMapper } from './UrlReferenceMapper';
 import { UrlMapping, ExportFormat } from './types';
+import * as yaml from 'js-yaml';
 
 const program = new Command();
 
@@ -146,7 +147,6 @@ program
     if (format === 'json') {
       console.log(JSON.stringify(mappings, null, 2));
     } else if (format === 'yaml') {
-      const yaml = require('js-yaml');
       console.log(yaml.dump(mappings));
     } else if (format === 'table') {
       // Table format

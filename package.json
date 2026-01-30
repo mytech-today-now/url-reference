@@ -42,12 +42,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/mytech-today-now/url-reference-mapper.git"
+    "url": "https://github.com/mytech-today-now/url-reference.git"
   },
   "bugs": {
-    "url": "https://github.com/mytech-today-now/url-reference-mapper/issues"
+    "url": "https://github.com/mytech-today-now/url-reference/issues"
   },
-  "homepage": "https://github.com/mytech-today-now/url-reference-mapper#readme",
+  "homepage": "https://github.com/mytech-today-now/url-reference#readme",
   "engines": {
     "node": ">=16.0.0"
   },

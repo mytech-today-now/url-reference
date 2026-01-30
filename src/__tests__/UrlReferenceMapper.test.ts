@@ -3,6 +3,7 @@ import { UrlMapping } from '../types';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
+import * as yaml from 'js-yaml';
 
 describe('UrlReferenceMapper', () => {
   let testMappings: UrlMapping[];
@@ -56,7 +57,6 @@ describe('UrlReferenceMapper', () => {
     });
 
     it('should load mappings from YAML file', () => {
-      const yaml = require('js-yaml');
       const configPath = path.join(tempDir, 'test-config.yaml');
       fs.writeFileSync(configPath, yaml.dump(testMappings));
 
@@ -255,14 +255,13 @@ describe('UrlReferenceMapper', () => {
     });
 
     it('should save mappings to YAML file', () => {
-      const yaml = require('js-yaml');
       const configPath = path.join(tempDir, 'output.yaml');
       const mapper = new UrlReferenceMapper({ mappings: testMappings, validateOnLoad: false });
 
       mapper.save(configPath);
 
       expect(fs.existsSync(configPath)).toBe(true);
-      const content = yaml.load(fs.readFileSync(configPath, 'utf-8'));
+      const content = yaml.load(fs.readFileSync(configPath, 'utf-8')) as UrlMapping[];
       expect(content).toHaveLength(2);
       expect(content[0].title).toBe('Test Post 1');
     });
@@ -377,11 +376,10 @@ describe('UrlReferenceMapper', () => {
     });
 
     it('should export to YAML format', () => {
-      const yaml = require('js-yaml');
       const mapper = new UrlReferenceMapper({ mappings: testMappings, validateOnLoad: false });
       const yamlOutput = mapper.export('yaml');
       expect(() => yaml.load(yamlOutput)).not.toThrow();
-      const parsed = yaml.load(yamlOutput);
+      const parsed = yaml.load(yamlOutput) as UrlMapping[];
       expect(parsed).toHaveLength(2);
       expect(parsed[0].title).toBe('Test Post 1');
     });
