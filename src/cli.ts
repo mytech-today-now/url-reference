@@ -32,25 +32,25 @@ program
       {
         title: "Copper ETFs and Investment Vehicles: 2026",
         url: "https://mytech.today/copper-etfs-and-investment-vehicles-2026/",
-        localPath: "G:\\_kyle\\temp_documents\\GitHub\\mytechtoday\\blogs\\copper-mining-part-4-etf-investment-vehicles.html",
+        localPath: "C:\\projects\\blogs\\copper-mining-part-4-etf-investment-vehicles.html",
         lastUpdated: new Date().toISOString()
       },
       {
         title: "Mid-Tier & Junior Copper Miners: 2026 Analysis",
         url: "https://mytech.today/mid-tier-junior-copper-miners-2026-analysis/",
-        localPath: "G:\\_kyle\\temp_documents\\GitHub\\mytechtoday\\blogs\\copper-mining-part-3-mid-tier-junior-companies.html",
+        localPath: "C:\\projects\\blogs\\copper-mining-part-3-mid-tier-junior-companies.html",
         lastUpdated: new Date().toISOString()
       },
       {
         title: "Copper Demand vs Supply: 2026-2040 Outlook",
         url: "https://mytech.today/copper-demand-vs-supply-2026-2040-outlook/",
-        localPath: "G:\\_kyle\\temp_documents\\GitHub\\mytechtoday\\blogs\\copper-mining-part-1-demand-supply-outlook.html",
+        localPath: "C:\\projects\\blogs\\copper-mining-part-1-demand-supply-outlook.html",
         lastUpdated: new Date().toISOString()
       },
       {
         title: "Major Copper Mining Companies Analysis 2026",
         url: "https://mytech.today/major-copper-mining-companies-analysis-2026/",
-        localPath: "G:\\_kyle\\temp_documents\\GitHub\\mytechtoday\\blogs\\copper-mining-part-2-major-companies-analysis.html",
+        localPath: "C:\\projects\\blogs\\copper-mining-part-2-major-companies-analysis.html",
         lastUpdated: new Date().toISOString()
       }
     ];

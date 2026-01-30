@@ -41,18 +41,23 @@ const mapper = new UrlReferenceMapper({
 });
 
 // Get published URL from local path
-const url = mapper.getUrlFromLocalPath("G:/path/to/file.html");
+// Windows
+const url = mapper.getUrlFromLocalPath("C:\\projects\\blog\\post.html");
+// macOS/Linux
+const url = mapper.getUrlFromLocalPath("/home/user/projects/blog/post.html");
 // → "https://mytech.today/published-url/"
 
 // Reverse lookup
 const path = mapper.getLocalPathFromUrl("https://mytech.today/published-url/");
-// → "G:/path/to/file.html"
+// → "C:\\projects\\blog\\post.html" (Windows)
+// → "/home/user/projects/blog/post.html" (macOS/Linux)
 
 // Add new mapping
 mapper.addMapping({
   title: "New Blog Post",
   url: "https://mytech.today/new-post/",
-  localPath: "G:/blogs/new-post.html"
+  localPath: "C:\\projects\\blog\\new-post.html"  // Windows
+  // localPath: "/home/user/projects/blog/new-post.html"  // macOS/Linux
 });
 
 mapper.save();
@@ -134,18 +139,33 @@ npx url-ref-mapper init --format yaml --path custom-path.yaml
 ### `add`
 Add a new mapping.
 
+**Windows:**
+```bash
+npx url-ref-mapper add ^
+  --title "My Blog Post" ^
+  --url "https://example.com/post/" ^
+  --path "C:\projects\blog\post.html"
+```
+
+**macOS/Linux:**
 ```bash
 npx url-ref-mapper add \
   --title "My Blog Post" \
   --url "https://example.com/post/" \
-  --path "G:/blogs/post.html"
+  --path "/home/user/projects/blog/post.html"
 ```
 
 ### `get-url`
 Get published URL from local path.
 
+**Windows:**
 ```bash
-npx url-ref-mapper get-url "G:/blogs/post.html"
+npx url-ref-mapper get-url "C:\projects\blog\post.html"
+```
+
+**macOS/Linux:**
+```bash
+npx url-ref-mapper get-url "/home/user/projects/blog/post.html"
 ```
 
 ### `get-path`
@@ -210,12 +230,25 @@ augx link coding-standards/typescript
 
 ### JSON Format (default)
 
+**Windows:**
 ```json
 [
   {
     "title": "Copper ETFs and Investment Vehicles: 2026",
     "url": "https://mytech.today/copper-etfs-and-investment-vehicles-2026/",
-    "localPath": "G:\\_kyle\\temp_documents\\GitHub\\mytechtoday\\blogs\\copper-mining-part-4-etf-investment-vehicles.html",
+    "localPath": "C:\\projects\\blogs\\copper-mining-part-4-etf-investment-vehicles.html",
+    "lastUpdated": "2026-01-27T17:04:00-06:00"
+  }
+]
+```
+
+**macOS/Linux:**
+```json
+[
+  {
+    "title": "Copper ETFs and Investment Vehicles: 2026",
+    "url": "https://mytech.today/copper-etfs-and-investment-vehicles-2026/",
+    "localPath": "/home/user/projects/blogs/copper-mining-part-4-etf-investment-vehicles.html",
     "lastUpdated": "2026-01-27T17:04:00-06:00"
   }
 ]
@@ -223,11 +256,67 @@ augx link coding-standards/typescript
 
 ### YAML Format
 
+**Windows:**
 ```yaml
 - title: Copper ETFs and Investment Vehicles: 2026
   url: https://mytech.today/copper-etfs-and-investment-vehicles-2026/
-  localPath: G:\_kyle\temp_documents\GitHub\mytechtoday\blogs\copper-mining-part-4-etf-investment-vehicles.html
+  localPath: C:\projects\blogs\copper-mining-part-4-etf-investment-vehicles.html
   lastUpdated: '2026-01-27T17:04:00-06:00'
+```
+
+**macOS/Linux:**
+```yaml
+- title: Copper ETFs and Investment Vehicles: 2026
+  url: https://mytech.today/copper-etfs-and-investment-vehicles-2026/
+  localPath: /home/user/projects/blogs/copper-mining-part-4-etf-investment-vehicles.html
+  lastUpdated: '2026-01-27T17:04:00-06:00'
+```
+
+## 🌍 Cross-Platform Support
+
+This package works seamlessly across **Windows**, **macOS**, and **Linux** platforms.
+
+### Path Format Guidelines
+
+**Windows:**
+- Use backslashes: `C:\projects\blog\post.html`
+- Or forward slashes: `C:/projects/blog/post.html`
+- Both formats are supported and normalized internally
+
+**macOS/Linux:**
+- Use forward slashes: `/home/user/projects/blog/post.html`
+- Absolute paths recommended for consistency
+
+### Platform-Specific Examples
+
+**Windows (PowerShell):**
+```powershell
+# Initialize config
+npx url-ref-mapper init
+
+# Add mapping
+npx url-ref-mapper add `
+  --title "My Post" `
+  --url "https://example.com/post/" `
+  --path "C:\projects\blog\post.html"
+
+# Get URL
+npx url-ref-mapper get-url "C:\projects\blog\post.html"
+```
+
+**macOS/Linux (Bash/Zsh):**
+```bash
+# Initialize config
+npx url-ref-mapper init
+
+# Add mapping
+npx url-ref-mapper add \
+  --title "My Post" \
+  --url "https://example.com/post/" \
+  --path "/home/user/projects/blog/post.html"
+
+# Get URL
+npx url-ref-mapper get-url "/home/user/projects/blog/post.html"
 ```
 
 ## 🧪 Testing
