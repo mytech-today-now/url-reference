@@ -11,6 +11,8 @@ module.exports = {
     '!src/**/*.d.ts',
     '!src/**/*.test.ts',
     '!src/**/*.spec.ts',
+    '!src/cli.ts', // CLI is tested via integration tests
+    '!src/index.ts', // Entry point with only exports
   ],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],

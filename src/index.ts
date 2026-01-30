@@ -1,6 +1,6 @@
 /**
  * @mytechtoday/url-reference-mapper
- * 
+ *
  * Bidirectional mapping between local filesystem paths and published internet URLs
  * for Augment AI workflows, OpenSpec, and beads integration.
  */
@@ -15,6 +15,5 @@ export {
   ValidationErrorType,
   ValidationWarning,
   ValidationWarningType,
-  ExportFormat
+  ExportFormat,
 } from './types';
-

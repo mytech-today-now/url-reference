@@ -94,4 +94,3 @@ export interface ValidationResult {
  * Export format options
  */
 export type ExportFormat = 'json' | 'yaml' | 'csv';
-

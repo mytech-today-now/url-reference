@@ -38,18 +38,20 @@ describe('CLI Integration Tests', () => {
   describe('init command', () => {
     it('should create default JSON config file', () => {
       const output = runCli('init', { cwd: tempDir });
-      
+
       expect(output).toContain('Created url-references.json');
       expect(fs.existsSync(path.join(tempDir, 'url-references.json'))).toBe(true);
-      
-      const content = JSON.parse(fs.readFileSync(path.join(tempDir, 'url-references.json'), 'utf-8'));
+
+      const content = JSON.parse(
+        fs.readFileSync(path.join(tempDir, 'url-references.json'), 'utf-8')
+      );
       expect(Array.isArray(content)).toBe(true);
       expect(content.length).toBeGreaterThan(0);
     });
 
     it('should create YAML config file when specified', () => {
       const output = runCli('init --format yaml', { cwd: tempDir });
-      
+
       expect(output).toContain('Created url-references.yaml');
       expect(fs.existsSync(path.join(tempDir, 'url-references.yaml'))).toBe(true);
     });
@@ -57,7 +59,7 @@ describe('CLI Integration Tests', () => {
     it('should create config at custom path', () => {
       const customPath = 'custom-config.json';
       const output = runCli(`init --path ${customPath}`, { cwd: tempDir });
-      
+
       expect(output).toContain(`Created ${customPath}`);
       expect(fs.existsSync(path.join(tempDir, customPath))).toBe(true);
     });
@@ -65,7 +67,7 @@ describe('CLI Integration Tests', () => {
     it('should fail if file already exists', () => {
       const configPath = path.join(tempDir, 'url-references.json');
       fs.writeFileSync(configPath, '[]');
-      
+
       try {
         runCli('init', { cwd: tempDir });
         fail('Should have thrown an error');
@@ -87,10 +89,12 @@ describe('CLI Integration Tests', () => {
         'add --title "Test Post" --url "https://example.com/test/" --path "/path/to/test.html"',
         { cwd: tempDir }
       );
-      
+
       expect(output).toContain('Added mapping: Test Post');
-      
-      const content = JSON.parse(fs.readFileSync(path.join(tempDir, 'url-references.json'), 'utf-8'));
+
+      const content = JSON.parse(
+        fs.readFileSync(path.join(tempDir, 'url-references.json'), 'utf-8')
+      );
       expect(content).toHaveLength(1);
       expect(content[0].title).toBe('Test Post');
       expect(content[0].url).toBe('https://example.com/test/');
@@ -99,27 +103,25 @@ describe('CLI Integration Tests', () => {
     it('should use custom config path', () => {
       const customConfig = path.join(tempDir, 'custom.json');
       fs.writeFileSync(customConfig, '[]');
-      
+
       runCli(
         `add --title "Test" --url "https://example.com/test/" --path "/test.html" --config ${customConfig}`,
         { cwd: tempDir }
       );
-      
+
       const content = JSON.parse(fs.readFileSync(customConfig, 'utf-8'));
       expect(content).toHaveLength(1);
     });
 
     it('should fail for duplicate URL', () => {
-      runCli(
-        'add --title "Test 1" --url "https://example.com/test/" --path "/path1.html"',
-        { cwd: tempDir }
-      );
-      
+      runCli('add --title "Test 1" --url "https://example.com/test/" --path "/path1.html"', {
+        cwd: tempDir,
+      });
+
       try {
-        runCli(
-          'add --title "Test 2" --url "https://example.com/test/" --path "/path2.html"',
-          { cwd: tempDir }
-        );
+        runCli('add --title "Test 2" --url "https://example.com/test/" --path "/path2.html"', {
+          cwd: tempDir,
+        });
         fail('Should have thrown an error');
       } catch (error: any) {
         expect(error.message).toContain('URL already exists');
@@ -339,4 +341,3 @@ describe('CLI Integration Tests', () => {
     });
   });
 });
-

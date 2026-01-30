@@ -1,7 +1,14 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as yaml from 'js-yaml';
-import { UrlMapping, UrlReferenceMapperConfig, ValidationResult, ValidationError, ValidationWarning, ExportFormat } from './types';
+import {
+  UrlMapping,
+  UrlReferenceMapperConfig,
+  ValidationResult,
+  ValidationError,
+  ValidationWarning,
+  ExportFormat,
+} from './types';
 
 /**
  * Main class for managing bidirectional URL-to-path mappings
@@ -34,7 +41,7 @@ export class UrlReferenceMapper {
       if (!validationResult.valid) {
         throw new Error(
           `Validation failed on load:\n` +
-          validationResult.errors.map(e => `  - [${e.type}] ${e.message}`).join('\n')
+            validationResult.errors.map((e) => `  - [${e.type}] ${e.message}`).join('\n')
         );
       }
     }
@@ -145,11 +152,11 @@ export class UrlReferenceMapper {
     const updatedMapping = {
       ...mapping,
       ...updates,
-      lastUpdated: new Date().toISOString()
+      lastUpdated: new Date().toISOString(),
     };
 
     // Update in array
-    const index = this.mappings.findIndex(m => m.url === url);
+    const index = this.mappings.findIndex((m) => m.url === url);
     if (index !== -1) {
       this.mappings[index] = updatedMapping;
     }
@@ -174,7 +181,7 @@ export class UrlReferenceMapper {
     }
 
     // Remove from array
-    this.mappings = this.mappings.filter(m => m.url !== url);
+    this.mappings = this.mappings.filter((m) => m.url !== url);
 
     // Remove from indexes
     this.urlToMapping.delete(url);
@@ -235,7 +242,7 @@ export class UrlReferenceMapper {
         errors.push({
           type: 'invalid_format',
           message: `Missing required fields in mapping: ${JSON.stringify(mapping)}`,
-          mapping
+          mapping,
         });
         continue;
       }
@@ -245,7 +252,7 @@ export class UrlReferenceMapper {
         errors.push({
           type: 'duplicate_url',
           message: `Duplicate URL found: ${mapping.url}`,
-          mapping
+          mapping,
         });
       }
       urls.add(mapping.url);
@@ -256,7 +263,7 @@ export class UrlReferenceMapper {
         errors.push({
           type: 'duplicate_path',
           message: `Duplicate local path found: ${mapping.localPath}`,
-          mapping
+          mapping,
         });
       }
       paths.add(normalizedPath);
@@ -268,7 +275,7 @@ export class UrlReferenceMapper {
         errors.push({
           type: 'invalid_url',
           message: `Invalid URL format: ${mapping.url}`,
-          mapping
+          mapping,
         });
       }
 
@@ -277,7 +284,7 @@ export class UrlReferenceMapper {
         warnings.push({
           type: 'missing_file',
           message: `Local file not found: ${mapping.localPath}`,
-          mapping
+          mapping,
         });
       }
 
@@ -286,7 +293,7 @@ export class UrlReferenceMapper {
         warnings.push({
           type: 'relative_path',
           message: `Relative path detected (absolute paths recommended): ${mapping.localPath}`,
-          mapping
+          mapping,
         });
       }
 
@@ -295,7 +302,7 @@ export class UrlReferenceMapper {
         warnings.push({
           type: 'missing_metadata',
           message: `Missing metadata for mapping: ${mapping.title}`,
-          mapping
+          mapping,
         });
       }
 
@@ -308,7 +315,7 @@ export class UrlReferenceMapper {
           warnings.push({
             type: 'outdated_timestamp',
             message: `Mapping not updated in ${Math.floor(daysDiff)} days: ${mapping.title}`,
-            mapping
+            mapping,
           });
         }
       }
@@ -317,7 +324,7 @@ export class UrlReferenceMapper {
     return {
       valid: errors.length === 0,
       errors,
-      warnings
+      warnings,
     };
   }
 
@@ -334,9 +341,9 @@ export class UrlReferenceMapper {
 
       case 'csv': {
         const headers = 'Title,URL,Local Path,Last Updated\n';
-        const rows = this.mappings.map(m =>
-          `"${m.title}","${m.url}","${m.localPath}","${m.lastUpdated || ''}"`
-        ).join('\n');
+        const rows = this.mappings
+          .map((m) => `"${m.title}","${m.url}","${m.localPath}","${m.lastUpdated || ''}"`)
+          .join('\n');
         return headers + rows;
       }
 
@@ -345,4 +352,3 @@ export class UrlReferenceMapper {
     }
   }
 }
-

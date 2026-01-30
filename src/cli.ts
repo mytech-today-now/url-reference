@@ -30,36 +30,36 @@ program
 
     const seedData: UrlMapping[] = [
       {
-        title: "Copper ETFs and Investment Vehicles: 2026",
-        url: "https://mytech.today/copper-etfs-and-investment-vehicles-2026/",
-        localPath: "C:\\projects\\blogs\\copper-mining-part-4-etf-investment-vehicles.html",
-        lastUpdated: new Date().toISOString()
+        title: 'Copper ETFs and Investment Vehicles: 2026',
+        url: 'https://mytech.today/copper-etfs-and-investment-vehicles-2026/',
+        localPath: 'C:\\projects\\blogs\\copper-mining-part-4-etf-investment-vehicles.html',
+        lastUpdated: new Date().toISOString(),
       },
       {
-        title: "Mid-Tier & Junior Copper Miners: 2026 Analysis",
-        url: "https://mytech.today/mid-tier-junior-copper-miners-2026-analysis/",
-        localPath: "C:\\projects\\blogs\\copper-mining-part-3-mid-tier-junior-companies.html",
-        lastUpdated: new Date().toISOString()
+        title: 'Mid-Tier & Junior Copper Miners: 2026 Analysis',
+        url: 'https://mytech.today/mid-tier-junior-copper-miners-2026-analysis/',
+        localPath: 'C:\\projects\\blogs\\copper-mining-part-3-mid-tier-junior-companies.html',
+        lastUpdated: new Date().toISOString(),
       },
       {
-        title: "Copper Demand vs Supply: 2026-2040 Outlook",
-        url: "https://mytech.today/copper-demand-vs-supply-2026-2040-outlook/",
-        localPath: "C:\\projects\\blogs\\copper-mining-part-1-demand-supply-outlook.html",
-        lastUpdated: new Date().toISOString()
+        title: 'Copper Demand vs Supply: 2026-2040 Outlook',
+        url: 'https://mytech.today/copper-demand-vs-supply-2026-2040-outlook/',
+        localPath: 'C:\\projects\\blogs\\copper-mining-part-1-demand-supply-outlook.html',
+        lastUpdated: new Date().toISOString(),
       },
       {
-        title: "Major Copper Mining Companies Analysis 2026",
-        url: "https://mytech.today/major-copper-mining-companies-analysis-2026/",
-        localPath: "C:\\projects\\blogs\\copper-mining-part-2-major-companies-analysis.html",
-        lastUpdated: new Date().toISOString()
-      }
+        title: 'Major Copper Mining Companies Analysis 2026',
+        url: 'https://mytech.today/major-copper-mining-companies-analysis-2026/',
+        localPath: 'C:\\projects\\blogs\\copper-mining-part-2-major-companies-analysis.html',
+        lastUpdated: new Date().toISOString(),
+      },
     ];
 
     const mapper = new UrlReferenceMapper({ mappings: seedData });
-    
+
     const outputPath = format === 'yaml' ? filePath.replace(/\.json$/, '.yaml') : filePath;
     mapper.save(outputPath);
-    
+
     console.log(`✓ Created ${outputPath} with ${seedData.length} seed mappings`);
   });
 
@@ -72,16 +72,16 @@ program
   .requiredOption('-p, --path <path>', 'Local filesystem path')
   .option('-c, --config <config>', 'Config file path', 'url-references.json')
   .action((options) => {
-    const mapper = new UrlReferenceMapper({ 
+    const mapper = new UrlReferenceMapper({
       configPath: options.config,
-      autoSave: true 
+      autoSave: true,
     });
 
     const mapping: UrlMapping = {
       title: options.title,
       url: options.url,
       localPath: options.path,
-      lastUpdated: new Date().toISOString()
+      lastUpdated: new Date().toISOString(),
     };
 
     try {
@@ -101,7 +101,7 @@ program
   .action((localPath, options) => {
     const mapper = new UrlReferenceMapper({ configPath: options.config });
     const url = mapper.getUrlFromLocalPath(localPath);
-    
+
     if (url) {
       console.log(url);
     } else {
@@ -118,7 +118,7 @@ program
   .action((url, options) => {
     const mapper = new UrlReferenceMapper({ configPath: options.config });
     const localPath = mapper.getLocalPathFromUrl(url);
-    
+
     if (localPath) {
       console.log(localPath);
     } else {
@@ -162,7 +162,9 @@ program
       });
       console.log(`Total: ${mappings.length} mapping(s)`);
     } else {
-      console.error(`Error: Unsupported format '${options.format}'. Use 'table', 'json', or 'yaml'.`);
+      console.error(
+        `Error: Unsupported format '${options.format}'. Use 'table', 'json', or 'yaml'.`
+      );
       process.exit(1);
     }
   });
@@ -178,12 +180,12 @@ program
 
     if (result.warnings.length > 0) {
       console.log('\nWarnings:');
-      result.warnings.forEach(w => console.log(`  ⚠ [${w.type}] ${w.message}`));
+      result.warnings.forEach((w) => console.log(`  ⚠ [${w.type}] ${w.message}`));
     }
 
     if (result.errors.length > 0) {
       console.log('\nErrors:');
-      result.errors.forEach(e => console.log(`  ✗ [${e.type}] ${e.message}`));
+      result.errors.forEach((e) => console.log(`  ✗ [${e.type}] ${e.message}`));
       process.exit(1);
     }
 
@@ -201,7 +203,7 @@ program
   .action((url, options) => {
     const mapper = new UrlReferenceMapper({
       configPath: options.config,
-      autoSave: true
+      autoSave: true,
     });
 
     const updates: Partial<UrlMapping> = {};
@@ -232,7 +234,7 @@ program
   .action((url, options) => {
     const mapper = new UrlReferenceMapper({
       configPath: options.config,
-      autoSave: true
+      autoSave: true,
     });
 
     try {
@@ -276,4 +278,3 @@ program
   });
 
 program.parse();
-

@@ -53,7 +53,9 @@ describe('UrlReferenceMapper', () => {
 
       const mapper = new UrlReferenceMapper({ configPath, validateOnLoad: false });
       expect(mapper.getAllMappings()).toHaveLength(2);
-      expect(mapper.getUrlFromLocalPath('/path/to/post-1.html')).toBe('https://example.com/post-1/');
+      expect(mapper.getUrlFromLocalPath('/path/to/post-1.html')).toBe(
+        'https://example.com/post-1/'
+      );
     });
 
     it('should load mappings from YAML file', () => {
@@ -62,7 +64,9 @@ describe('UrlReferenceMapper', () => {
 
       const mapper = new UrlReferenceMapper({ configPath, validateOnLoad: false });
       expect(mapper.getAllMappings()).toHaveLength(2);
-      expect(mapper.getUrlFromLocalPath('/path/to/post-1.html')).toBe('https://example.com/post-1/');
+      expect(mapper.getUrlFromLocalPath('/path/to/post-1.html')).toBe(
+        'https://example.com/post-1/'
+      );
     });
 
     it('should throw error if config file not found', () => {
@@ -77,17 +81,17 @@ describe('UrlReferenceMapper', () => {
     });
 
     it('should validate on load by default', () => {
-      const invalidMappings = [
-        { title: '', url: 'invalid-url', localPath: '/path' } as UrlMapping,
-      ];
-      expect(() => new UrlReferenceMapper({ mappings: invalidMappings })).toThrow('Validation failed on load');
+      const invalidMappings = [{ title: '', url: 'invalid-url', localPath: '/path' } as UrlMapping];
+      expect(() => new UrlReferenceMapper({ mappings: invalidMappings })).toThrow(
+        'Validation failed on load'
+      );
     });
 
     it('should skip validation when validateOnLoad is false', () => {
-      const invalidMappings = [
-        { title: '', url: 'invalid-url', localPath: '/path' } as UrlMapping,
-      ];
-      expect(() => new UrlReferenceMapper({ mappings: invalidMappings, validateOnLoad: false })).not.toThrow();
+      const invalidMappings = [{ title: '', url: 'invalid-url', localPath: '/path' } as UrlMapping];
+      expect(
+        () => new UrlReferenceMapper({ mappings: invalidMappings, validateOnLoad: false })
+      ).not.toThrow();
     });
   });
 
@@ -178,7 +182,7 @@ describe('UrlReferenceMapper', () => {
       const mapper = new UrlReferenceMapper({
         mappings: testMappings,
         validateOnLoad: false,
-        allowDuplicates: true
+        allowDuplicates: true,
       });
       const duplicateMapping: UrlMapping = {
         title: 'Duplicate',
@@ -196,7 +200,7 @@ describe('UrlReferenceMapper', () => {
       const mapper = new UrlReferenceMapper({ mappings: [...testMappings], validateOnLoad: false });
       mapper.updateMapping('https://example.com/post-1/', { title: 'Updated Title' });
 
-      const updated = mapper.getAllMappings().find(m => m.url === 'https://example.com/post-1/');
+      const updated = mapper.getAllMappings().find((m) => m.url === 'https://example.com/post-1/');
       expect(updated?.title).toBe('Updated Title');
       expect(updated?.lastUpdated).toBeDefined();
     });
@@ -205,15 +209,20 @@ describe('UrlReferenceMapper', () => {
       const mapper = new UrlReferenceMapper({ mappings: [...testMappings], validateOnLoad: false });
       mapper.updateMapping('https://example.com/post-1/', { localPath: '/new/path/post-1.html' });
 
-      expect(mapper.getLocalPathFromUrl('https://example.com/post-1/')).toBe('/new/path/post-1.html');
-      expect(mapper.getUrlFromLocalPath('/new/path/post-1.html')).toBe('https://example.com/post-1/');
+      expect(mapper.getLocalPathFromUrl('https://example.com/post-1/')).toBe(
+        '/new/path/post-1.html'
+      );
+      expect(mapper.getUrlFromLocalPath('/new/path/post-1.html')).toBe(
+        'https://example.com/post-1/'
+      );
       expect(mapper.getUrlFromLocalPath('/path/to/post-1.html')).toBeNull();
     });
 
     it('should throw error for non-existing mapping', () => {
       const mapper = new UrlReferenceMapper({ mappings: [...testMappings], validateOnLoad: false });
-      expect(() => mapper.updateMapping('https://example.com/non-existing/', { title: 'New' }))
-        .toThrow('Mapping not found for URL');
+      expect(() =>
+        mapper.updateMapping('https://example.com/non-existing/', { title: 'New' })
+      ).toThrow('Mapping not found for URL');
     });
   });
 
@@ -304,7 +313,7 @@ describe('UrlReferenceMapper', () => {
       ];
       const mapper = new UrlReferenceMapper({
         mappings: invalidMappings,
-        validateOnLoad: false
+        validateOnLoad: false,
       });
       const result = mapper.validate();
       expect(result.valid).toBe(false);
@@ -317,7 +326,7 @@ describe('UrlReferenceMapper', () => {
       ];
       const mapper = new UrlReferenceMapper({
         mappings: invalidMappings,
-        validateOnLoad: false
+        validateOnLoad: false,
       });
       const result = mapper.validate();
       expect(result.valid).toBe(false);
@@ -331,7 +340,7 @@ describe('UrlReferenceMapper', () => {
       ];
       const mapper = new UrlReferenceMapper({
         mappings: duplicateMappings,
-        validateOnLoad: false
+        validateOnLoad: false,
       });
       const result = mapper.validate();
       expect(result.valid).toBe(false);
@@ -345,7 +354,7 @@ describe('UrlReferenceMapper', () => {
       ];
       const mapper = new UrlReferenceMapper({
         mappings: duplicateMappings,
-        validateOnLoad: false
+        validateOnLoad: false,
       });
       const result = mapper.validate();
       expect(result.valid).toBe(false);
@@ -358,10 +367,85 @@ describe('UrlReferenceMapper', () => {
       ];
       const mapper = new UrlReferenceMapper({
         mappings: relativeMappings,
-        validateOnLoad: false
+        validateOnLoad: false,
       });
       const result = mapper.validate();
       expect(result.warnings.some((w) => w.type === 'relative_path')).toBe(true);
+    });
+
+    it('should warn about missing files', () => {
+      const missingFileMappings = [
+        {
+          title: 'Test',
+          url: 'https://example.com/test/',
+          localPath: '/path/to/non-existent-file.html',
+        },
+      ];
+      const mapper = new UrlReferenceMapper({
+        mappings: missingFileMappings,
+        validateOnLoad: false,
+      });
+      const result = mapper.validate();
+      expect(result.warnings.some((w) => w.type === 'missing_file')).toBe(true);
+    });
+
+    it('should warn about missing metadata', () => {
+      const noMetadataMappings = [
+        {
+          title: 'Test',
+          url: 'https://example.com/test/',
+          localPath: '/path/to/test.html',
+          // No metadata field
+        },
+      ];
+      const mapper = new UrlReferenceMapper({
+        mappings: noMetadataMappings,
+        validateOnLoad: false,
+      });
+      const result = mapper.validate();
+      expect(result.warnings.some((w) => w.type === 'missing_metadata')).toBe(true);
+    });
+
+    it('should warn about outdated timestamps', () => {
+      // Create a date more than 90 days old
+      const oldDate = new Date();
+      oldDate.setDate(oldDate.getDate() - 100);
+
+      const outdatedMappings = [
+        {
+          title: 'Test',
+          url: 'https://example.com/test/',
+          localPath: '/path/to/test.html',
+          lastUpdated: oldDate.toISOString(),
+        },
+      ];
+      const mapper = new UrlReferenceMapper({
+        mappings: outdatedMappings,
+        validateOnLoad: false,
+      });
+      const result = mapper.validate();
+      expect(result.warnings.some((w) => w.type === 'outdated_timestamp')).toBe(true);
+    });
+
+    it('should not warn about recent timestamps', () => {
+      // Create a recent date (within 90 days)
+      const recentDate = new Date();
+      recentDate.setDate(recentDate.getDate() - 30);
+
+      const recentMappings = [
+        {
+          title: 'Test',
+          url: 'https://example.com/test/',
+          localPath: '/path/to/test.html',
+          lastUpdated: recentDate.toISOString(),
+        },
+      ];
+      const mapper = new UrlReferenceMapper({
+        mappings: recentMappings,
+        validateOnLoad: false,
+      });
+      const result = mapper.validate();
+      expect(result.warnings.some((w) => w.type === 'outdated_timestamp')).toBe(false);
     });
   });
 
@@ -416,4 +500,3 @@ describe('UrlReferenceMapper', () => {
     });
   });
 });
-
