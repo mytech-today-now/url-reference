@@ -1,0 +1,21 @@
+{
+  "version": "0.1.0",
+  "modules": [
+    {
+      "name": "workflows/openspec",
+      "version": "1.0.0",
+      "type": "workflow",
+      "description": "Spec-driven development (SDD) workflow for AI coding assistants. Provides structured change management with proposals, specs, and tasks."
+    },
+    {
+      "name": "workflows/beads",
+      "version": "1.0.0",
+      "type": "workflow",
+      "description": "Distributed, git-backed graph issue tracker for AI agents. Provides persistent, structured memory for coding agents with dependency tracking."
+    }
+  ],
+  "settings": {
+    "autoUpdate": false,
+    "checkUpdatesOnInit": true
+  }
+}

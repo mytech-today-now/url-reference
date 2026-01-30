@@ -1,0 +1,632 @@
+openapi: 3.1.0
+info:
+  title: "@mytechtoday/url-reference API"
+  version: 1.0.0
+  description: |
+    # @mytechtoday/url-reference
+
+    A standalone, reusable npm package providing clean, bidirectional mapping between local
+    filesystem paths and published internet URLs. This package serves as the canonical reference
+    system for Augment AI-generated projects (especially those using OpenSpec, beads, and Augmentcode),
+    eliminating broken local-file links in generated content when published to the web
+    (WordPress, static sites, etc.).
+
+    ## Key Features
+    - **Bidirectional Mapping**: Look up URLs from local paths and vice versa
+    - **Multiple Config Formats**: Support for JSON, YAML, and CSV
+    - **CLI Tools**: Command-line interface for common operations
+    - **TypeScript Support**: Full TypeScript declarations included
+    - **Validation**: Built-in validation for mappings
+    - **Augment AI Integration**: Designed for OpenSpec and beads workflows
+
+    ## Installation
+    ```bash
+    npm install @mytechtoday/url-reference
+    ```
+
+    ## Quick Start
+    ```typescript
+    import { UrlReferenceMapper } from '@mytechtoday/url-reference';
+
+    const mapper = new UrlReferenceMapper({
+      configPath: './url-references.json'
+    });
+
+    const url = mapper.getUrlFromLocalPath('G:/path/to/file.html');
+    ```
+
+    This specification documents the programmatic API surface, data models, and CLI commands.
+
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  contact:
+    name: MyTech.Today
+    url: https://mytech.today
+    email: contact@mytech.today
+  x-jira-ticket: AUG-456
+  x-package-name: "@mytechtoday/url-reference"
+  x-npm-url: "https://www.npmjs.com/package/@mytechtoday/url-reference"
+  x-repository: "https://github.com/mytechtoday/url-reference"
+
+servers:
+  - url: http://localhost
+    description: Local development (programmatic API only, no HTTP server)
+
+tags:
+  - name: Core API
+    description: Main UrlReferenceMapper class methods
+  - name: CLI
+    description: Command-line interface operations
+  - name: Configuration
+    description: Configuration file formats and schemas
+
+paths:
+  /api/mapper/url-from-path:
+    post:
+      tags:
+        - Core API
+      summary: Get published URL from local path
+      description: Looks up the published URL corresponding to a local filesystem path
+      operationId: getUrlFromLocalPath
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - localPath
+              properties:
+                localPath:
+                  type: string
+                  description: Local filesystem path
+                  example: "G:\\_kyle\\temp_documents\\GitHub\\mytechtoday\\blogs\\copper-mining-part-4-etf-investment-vehicles.html"
+      responses:
+        '200':
+          description: URL found successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url:
+                    type: string
+                    format: uri
+                    example: "https://mytech.today/copper-etfs-and-investment-vehicles-2026/"
+        '404':
+          description: No mapping found for the given local path
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/mapper/path-from-url:
+    post:
+      tags:
+        - Core API
+      summary: Get local path from published URL
+      description: Reverse lookup - finds the local filesystem path for a published URL
+      operationId: getLocalPathFromUrl
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - url
+              properties:
+                url:
+                  type: string
+                  format: uri
+                  description: Published URL
+                  example: "https://mytech.today/copper-demand-vs-supply-2026-2040-outlook/"
+      responses:
+        '200':
+          description: Local path found successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  localPath:
+                    type: string
+                    example: "G:\\_kyle\\temp_documents\\GitHub\\mytechtoday\\blogs\\copper-mining-part-1-demand-supply-outlook.html"
+        '404':
+          description: No mapping found for the given URL
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/mapper/mappings:
+    get:
+      tags:
+        - Core API
+      summary: Get all mappings
+      description: Retrieves all URL-to-path mappings currently loaded
+      operationId: getAllMappings
+      responses:
+        '200':
+          description: List of all mappings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UrlMapping'
+
+    post:
+      tags:
+        - Core API
+      summary: Add a new mapping
+      description: Adds a new URL-to-path mapping to the collection
+      operationId: addMapping
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UrlMapping'
+      responses:
+        '201':
+          description: Mapping added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UrlMapping'
+        '400':
+          description: Invalid mapping data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Mapping already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/mapper/mappings/{id}:
+    put:
+      tags:
+        - Core API
+      summary: Update an existing mapping
+      description: Updates a mapping identified by URL or local path
+      operationId: updateMapping
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: URL-encoded identifier (URL or local path)
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UrlMapping'
+      responses:
+        '200':
+          description: Mapping updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UrlMapping'
+        '404':
+          description: Mapping not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      tags:
+        - Core API
+      summary: Remove a mapping
+      description: Deletes a mapping identified by URL or local path
+      operationId: removeMapping
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: URL-encoded identifier (URL or local path)
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Mapping deleted successfully
+        '404':
+          description: Mapping not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/mapper/validate:
+    post:
+      tags:
+        - Core API
+      summary: Validate all mappings
+      description: Validates all mappings for correctness and consistency
+      operationId: validateMappings
+      responses:
+        '200':
+          description: Validation results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  valid:
+                    type: boolean
+                    description: Whether all mappings are valid
+                  errors:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ValidationError'
+                  warnings:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ValidationWarning'
+
+  /api/mapper/save:
+    post:
+      tags:
+        - Core API
+      summary: Persist mappings to file
+      description: Saves current mappings to the configured file
+      operationId: saveMappings
+      responses:
+        '200':
+          description: Mappings saved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  filePath:
+                    type: string
+                    description: Path where mappings were saved
+        '500':
+          description: Error saving mappings
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/mapper/export:
+    post:
+      tags:
+        - Core API
+      summary: Export mappings in various formats
+      description: Exports mappings to JSON, YAML, or CSV format
+      operationId: exportMappings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                format:
+                  type: string
+                  enum: [json, yaml, csv]
+                  default: json
+      responses:
+        '200':
+          description: Exported data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  format:
+                    type: string
+                  data:
+                    type: string
+                    description: Exported data as string
+
+components:
+  schemas:
+    UrlMapping:
+      type: object
+      required:
+        - title
+        - url
+        - localPath
+      properties:
+        title:
+          type: string
+          description: Human-readable title for the mapping
+          example: "Copper ETFs and Investment Vehicles: 2026"
+        url:
+          type: string
+          format: uri
+          description: Published internet URL
+          example: "https://mytech.today/copper-etfs-and-investment-vehicles-2026/"
+        localPath:
+          type: string
+          description: Local filesystem path (absolute or relative)
+          example: "G:\\_kyle\\temp_documents\\GitHub\\mytechtoday\\blogs\\copper-mining-part-4-etf-investment-vehicles.html"
+        lastUpdated:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp of last update
+          example: "2026-01-27T17:04:00-06:00"
+        metadata:
+          type: object
+          description: Optional additional metadata
+          additionalProperties: true
+
+    Error:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          description: Error type
+        message:
+          type: string
+          description: Human-readable error message
+        details:
+          type: object
+          description: Additional error details
+          additionalProperties: true
+
+    ValidationError:
+      type: object
+      required:
+        - type
+        - message
+      properties:
+        type:
+          type: string
+          enum: [duplicate_url, duplicate_path, invalid_url, missing_file, invalid_format]
+        message:
+          type: string
+        mapping:
+          $ref: '#/components/schemas/UrlMapping'
+
+    ValidationWarning:
+      type: object
+      required:
+        - type
+        - message
+      properties:
+        type:
+          type: string
+          enum: [outdated_timestamp, relative_path, missing_metadata]
+        message:
+          type: string
+        mapping:
+          $ref: '#/components/schemas/UrlMapping'
+
+    MapperConfig:
+      type: object
+      description: Configuration options for UrlReferenceMapper
+      properties:
+        configPath:
+          type: string
+          description: Path to configuration file (JSON or YAML)
+          example: "./url-references.json"
+        mappings:
+          type: array
+          description: Inline mappings (alternative to configPath)
+          items:
+            $ref: '#/components/schemas/UrlMapping'
+        autoSave:
+          type: boolean
+          description: Automatically save changes to file
+          default: false
+        validateOnLoad:
+          type: boolean
+          description: Validate mappings when loading
+          default: true
+        allowDuplicates:
+          type: boolean
+          description: Allow duplicate URLs or paths
+          default: false
+
+x-cli-commands:
+  init:
+    description: Initialize a new url-references configuration file
+    usage: npx url-ref-mapper init [--format json|yaml] [--output <path>]
+    options:
+      - name: format
+        type: string
+        default: json
+        description: Output format (json or yaml)
+      - name: output
+        type: string
+        default: ./url-references.json
+        description: Output file path
+    example: npx url-ref-mapper init --format yaml --output ./config/urls.yaml
+
+  add:
+    description: Add a new URL mapping
+    usage: npx url-ref-mapper add --title <title> --url <url> --path <path>
+    options:
+      - name: title
+        type: string
+        required: true
+        description: Title for the mapping
+      - name: url
+        type: string
+        required: true
+        description: Published URL
+      - name: path
+        type: string
+        required: true
+        description: Local filesystem path
+    example: npx url-ref-mapper add --title "My Article" --url "https://example.com/article" --path "./content/article.html"
+
+  get-url:
+    description: Get published URL from local path
+    usage: npx url-ref-mapper get-url <localPath>
+    arguments:
+      - name: localPath
+        type: string
+        required: true
+        description: Local filesystem path
+    example: npx url-ref-mapper get-url "G:\\_kyle\\temp_documents\\GitHub\\mytechtoday\\blogs\\copper-mining-part-4-etf-investment-vehicles.html"
+
+  get-path:
+    description: Get local path from published URL
+    usage: npx url-ref-mapper get-path <url>
+    arguments:
+      - name: url
+        type: string
+        required: true
+        description: Published URL
+    example: npx url-ref-mapper get-path "https://mytech.today/copper-etfs-and-investment-vehicles-2026/"
+
+  validate:
+    description: Validate all mappings for correctness
+    usage: npx url-ref-mapper validate [--config <path>]
+    options:
+      - name: config
+        type: string
+        description: Path to configuration file
+    example: npx url-ref-mapper validate --config ./url-references.json
+
+  export:
+    description: Export mappings to different formats
+    usage: npx url-ref-mapper export --format <format> [--output <path>]
+    options:
+      - name: format
+        type: string
+        required: true
+        enum: [json, yaml, csv]
+        description: Export format
+      - name: output
+        type: string
+        description: Output file path (stdout if not specified)
+    example: npx url-ref-mapper export --format csv --output ./mappings.csv
+
+  list:
+    description: List all current mappings
+    usage: npx url-ref-mapper list [--format table|json|yaml]
+    options:
+      - name: format
+        type: string
+        default: table
+        enum: [table, json, yaml]
+        description: Output format
+    example: npx url-ref-mapper list --format table
+
+x-typescript-usage:
+  basic-example: |
+    import { UrlReferenceMapper } from '@mytechtoday/url-reference';
+
+    const mapper = new UrlReferenceMapper({
+      configPath: './url-references.json'
+    });
+
+    // Get URL from local path
+    const url = mapper.getUrlFromLocalPath('G:\\_kyle\\temp_documents\\GitHub\\mytechtoday\\blogs\\copper-mining-part-4-etf-investment-vehicles.html');
+    console.log(url); // https://mytech.today/copper-etfs-and-investment-vehicles-2026/
+
+    // Reverse lookup
+    const path = mapper.getLocalPathFromUrl('https://mytech.today/copper-demand-vs-supply-2026-2040-outlook/');
+    console.log(path); // G:\\_kyle\\temp_documents\\GitHub\\mytechtoday\\blogs\\copper-mining-part-1-demand-supply-outlook.html
+
+  add-mapping-example: |
+    import { UrlReferenceMapper } from '@mytechtoday/url-reference';
+
+    const mapper = new UrlReferenceMapper({ configPath: './url-references.json' });
+
+    mapper.addMapping({
+      title: "New Blog Post",
+      url: "https://mytech.today/new-post/",
+      localPath: "G:\\_kyle\\temp_documents\\GitHub\\mytechtoday\\blogs\\new-post.html",
+      lastUpdated: new Date().toISOString()
+    });
+
+    mapper.save(); // Persist to file
+
+  validation-example: |
+    import { UrlReferenceMapper } from '@mytechtoday/url-reference';
+
+    const mapper = new UrlReferenceMapper({
+      configPath: './url-references.json',
+      validateOnLoad: true
+    });
+
+    const validation = mapper.validate();
+    if (!validation.valid) {
+      console.error('Validation errors:', validation.errors);
+      console.warn('Validation warnings:', validation.warnings);
+    }
+
+  inline-mappings-example: |
+    import { UrlReferenceMapper } from '@mytechtoday/url-reference';
+
+    const mapper = new UrlReferenceMapper({
+      mappings: [
+        {
+          title: "Copper ETFs and Investment Vehicles: 2026",
+          url: "https://mytech.today/copper-etfs-and-investment-vehicles-2026/",
+          localPath: "G:\\_kyle\\temp_documents\\GitHub\\mytechtoday\\blogs\\copper-mining-part-4-etf-investment-vehicles.html"
+        }
+      ]
+    });
+
+x-augment-ai-integration:
+  description: |
+    This package is designed to integrate seamlessly with Augment AI workflows,
+    OpenSpec specifications, and beads task management.
+
+  beads-task-example: |
+    # In a beads task file
+    import { UrlReferenceMapper } from '@mytechtoday/url-reference';
+
+    export async function convertLocalLinksToPublished(content: string): Promise<string> {
+      const mapper = new UrlReferenceMapper({ configPath: './.augment/url-references.json' });
+
+      // Replace local file paths with published URLs
+      return content.replace(/G:\\_kyle\\temp_documents\\[^\s"']+/g, (localPath) => {
+        const url = mapper.getUrlFromLocalPath(localPath);
+        return url || localPath; // Fallback to original if no mapping found
+      });
+    }
+
+  openspec-schema-reference: |
+    # Reference the UrlMapping schema in OpenSpec documents
+    components:
+      schemas:
+        ArticleReference:
+          allOf:
+            - $ref: 'node_modules/@mytechtoday/url-reference/schema.json#/components/schemas/UrlMapping'
+            - type: object
+              properties:
+                category:
+                  type: string
+
+x-seed-data:
+  description: Initial mappings included with the package
+  mappings:
+    - title: "Copper ETFs and Investment Vehicles: 2026"
+      url: "https://mytech.today/copper-etfs-and-investment-vehicles-2026/"
+      localPath: "G:\\_kyle\\temp_documents\\GitHub\\mytechtoday\\blogs\\copper-mining-part-4-etf-investment-vehicles.html"
+      lastUpdated: "2026-01-27T17:04:00-06:00"
+    - title: "Mid-Tier & Junior Copper Miners: 2026 Analysis"
+      url: "https://mytech.today/mid-tier-junior-copper-miners-2026-analysis/"
+      localPath: "G:\\_kyle\\temp_documents\\GitHub\\mytechtoday\\blogs\\copper-mining-part-3-mid-tier-junior-companies.html"
+      lastUpdated: "2026-01-27T17:04:00-06:00"
+    - title: "Copper Demand vs Supply: 2026-2040 Outlook"
+      url: "https://mytech.today/copper-demand-vs-supply-2026-2040-outlook/"
+      localPath: "G:\\_kyle\\temp_documents\\GitHub\\mytechtoday\\blogs\\copper-mining-part-1-demand-supply-outlook.html"
+      lastUpdated: "2026-01-27T17:04:00-06:00"
+    - title: "Major Copper Mining Companies Analysis 2026"
+      url: "https://mytech.today/major-copper-mining-companies-analysis-2026/"
+      localPath: "G:\\_kyle\\temp_documents\\GitHub\\mytechtoday\\blogs\\copper-mining-part-2-major-companies-analysis.html"
+      lastUpdated: "2026-01-27T17:04:00-06:00"
+

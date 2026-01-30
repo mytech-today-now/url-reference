@@ -1,0 +1,43 @@
+schema: spec-driven
+
+# Project context
+context: |
+  Tech stack: TypeScript, Node.js
+  Package: @mytechtoday/url-reference - npm package for URL/path mapping
+  Target: Node.js >=16.0.0
+  Testing: Jest
+  Build: TypeScript compiler (tsc)
+  CLI: Commander.js
+  Config formats: JSON, YAML (js-yaml)
+
+  Domain: Developer tooling for Augment AI workflows
+  Purpose: Bidirectional mapping between local filesystem paths and published URLs
+  Integration: OpenSpec, beads, Augmentcode AI
+
+  Conventions:
+  - Use TypeScript strict mode
+  - Export both ESM and CommonJS
+  - Include TypeScript declarations
+  - Follow semantic versioning
+  - MIT license
+
+  Related tickets:
+  - AUG-456: Create standalone npm package
+  - AUG-457: Migrate .augment/ directory to use package
+  - AUG-458: Update OpenSpec schema references
+
+# Per-artifact rules
+rules:
+  proposal:
+    - Keep proposals focused on user value
+    - Always include "Non-goals" section
+    - Reference JIRA ticket AUG-456
+  specs:
+    - Include TypeScript type definitions
+    - Provide usage examples
+    - Document validation rules
+    - Include acceptance criteria
+  tasks:
+    - Break tasks into chunks of max 2-3 hours
+    - Include testing tasks for each feature
+    - Add documentation tasks

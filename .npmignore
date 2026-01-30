@@ -1,0 +1,51 @@
+# Source files (only ship dist/)
+src/
+tsconfig.json
+
+# Tests
+**/*.test.ts
+**/*.spec.ts
+__tests__/
+jest.config.js
+coverage/
+
+# Development tools
+.beads/
+other-files/
+ai-prompts/
+openspec/
+
+# Build artifacts
+*.tsbuildinfo
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Git
+.git/
+.gitignore
+.github/
+
+# Linting and formatting
+.eslintrc.json
+.prettierrc.json
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.*
+
+# Temporary
+*.tmp
+.cache/
+
