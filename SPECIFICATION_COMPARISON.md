@@ -84,7 +84,7 @@ mapper.save();
 5. `validate` - Validate mappings
 6. `export` - Export to different formats
 
-**Implemented (9 commands):**
+**Implemented (11 commands):**
 1. ✅ `init`
 2. ✅ `add`
 3. ✅ `get-url`
@@ -94,8 +94,10 @@ mapper.save();
 7. ✅ **BONUS**: `list` - Display all mappings
 8. ✅ **BONUS**: `update` - Update existing mappings (v1.1.0)
 9. ✅ **BONUS**: `delete` - Remove mappings (v1.1.0)
+10. ✅ **BONUS**: `uninstall` - Uninstall the package (v1.2.0)
+11. ✅ **BONUS**: `self-update` - Update CLI to latest version (v1.2.0)
 
-**Status:** ✅ **Exceeds specification** - Added 3 additional commands
+**Status:** ✅ **Exceeds specification** - Added 5 additional commands
 
 ---
 

@@ -2,6 +2,7 @@
 
 import { Command } from 'commander';
 import * as fs from 'fs';
+import { execSync } from 'child_process';
 import { UrlReferenceMapper } from './UrlReferenceMapper';
 import { UrlMapping, ExportFormat } from './types';
 import * as yaml from 'js-yaml';
@@ -11,7 +12,7 @@ const program = new Command();
 program
   .name('url-ref-mapper')
   .description('CLI tool for managing URL-to-path mappings')
-  .version('1.1.0');
+  .version('1.2.0');
 
 // Init command
 program
@@ -273,6 +274,98 @@ program
       }
     } catch (error) {
       console.error(`Error: ${(error as Error).message}`);
+      process.exit(1);
+    }
+  });
+
+// Uninstall command
+program
+  .command('uninstall')
+  .description('Uninstall the URL reference mapper from the system')
+  .option('-g, --global', 'Uninstall globally installed package', false)
+  .option('-y, --yes', 'Skip confirmation prompt', false)
+  .action((options) => {
+    const packageName = '@mytechtoday/url-reference-mapper';
+    const isGlobal = options.global;
+    const skipConfirm = options.yes;
+
+    console.log(`\nUninstalling ${packageName}${isGlobal ? ' (global)' : ' (local)'}...\n`);
+
+    // Confirmation prompt
+    if (!skipConfirm) {
+      console.log('⚠️  This will remove the package from your system.');
+      console.log('   To proceed, run this command with the --yes flag:\n');
+      console.log(`   url-ref-mapper uninstall${isGlobal ? ' --global' : ''} --yes\n`);
+      process.exit(0);
+    }
+
+    try {
+      const uninstallCmd = isGlobal
+        ? `npm uninstall -g ${packageName}`
+        : `npm uninstall ${packageName}`;
+
+      console.log(`Running: ${uninstallCmd}\n`);
+      execSync(uninstallCmd, { stdio: 'inherit' });
+
+      console.log(`\n✓ Successfully uninstalled ${packageName}`);
+
+      if (isGlobal) {
+        console.log('  The url-ref-mapper command is no longer available globally.');
+      } else {
+        console.log('  The package has been removed from your project dependencies.');
+      }
+    } catch (error) {
+      console.error(`\n✗ Failed to uninstall ${packageName}`);
+      console.error(`  ${(error as Error).message}`);
+      process.exit(1);
+    }
+  });
+
+// Self-update command
+program
+  .command('self-update')
+  .description('Update the URL reference mapper CLI to the latest version')
+  .option('-g, --global', 'Update global installation', false)
+  .action((options) => {
+    const packageName = '@mytechtoday/url-reference-mapper';
+    const isGlobal = options.global;
+
+    console.log(`\nChecking for updates to ${packageName}...\n`);
+
+    try {
+      // Get current version
+      const currentVersion = program.version();
+      console.log(`Current version: ${currentVersion}`);
+
+      // Get latest version from npm
+      const latestVersionCmd = `npm view ${packageName} version`;
+      const latestVersion = execSync(latestVersionCmd, { encoding: 'utf-8' }).trim();
+      console.log(`Latest version:  ${latestVersion}\n`);
+
+      if (currentVersion === latestVersion) {
+        console.log('✓ You are already using the latest version!');
+        process.exit(0);
+      }
+
+      // Update the package
+      const updateCmd = isGlobal
+        ? `npm install -g ${packageName}@latest`
+        : `npm install ${packageName}@latest`;
+
+      console.log(`Updating from v${currentVersion} to v${latestVersion}...\n`);
+      console.log(`Running: ${updateCmd}\n`);
+      execSync(updateCmd, { stdio: 'inherit' });
+
+      console.log(`\n✓ Successfully updated to v${latestVersion}`);
+
+      if (isGlobal) {
+        console.log('  Run "url-ref-mapper --version" to verify the update.');
+      } else {
+        console.log('  The package has been updated in your project dependencies.');
+      }
+    } catch (error) {
+      console.error(`\n✗ Failed to update ${packageName}`);
+      console.error(`  ${(error as Error).message}`);
       process.exit(1);
     }
   });

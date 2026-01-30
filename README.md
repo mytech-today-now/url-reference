@@ -190,6 +190,31 @@ npx url-ref-mapper export --format csv --output mappings.csv
 npx url-ref-mapper export --format yaml
 ```
 
+### `uninstall`
+Uninstall the URL reference mapper from your system.
+
+```bash
+# Show confirmation prompt
+npx url-ref-mapper uninstall
+
+# Uninstall without confirmation
+npx url-ref-mapper uninstall --yes
+
+# Uninstall global installation
+npx url-ref-mapper uninstall --global --yes
+```
+
+### `self-update`
+Update the CLI to the latest version from npm.
+
+```bash
+# Update local installation
+npx url-ref-mapper self-update
+
+# Update global installation
+url-ref-mapper self-update --global
+```
+
 ## 🤖 Augment AI Integration
 
 This package is designed to work seamlessly with Augment AI workflows:

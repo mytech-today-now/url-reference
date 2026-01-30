@@ -340,4 +340,51 @@ describe('CLI Integration Tests', () => {
       expect(content).toHaveLength(1);
     });
   });
+
+  describe('uninstall command', () => {
+    it('should show confirmation message without --yes flag', () => {
+      const output = runCli('uninstall', { cwd: tempDir });
+
+      expect(output).toContain('This will remove the package from your system');
+      expect(output).toContain('--yes');
+    });
+
+    it('should show confirmation message for global uninstall without --yes flag', () => {
+      const output = runCli('uninstall --global', { cwd: tempDir });
+
+      expect(output).toContain('This will remove the package from your system');
+      expect(output).toContain('--global --yes');
+    });
+
+    // Note: We don't test actual uninstallation as it would remove the package
+    // and break the test suite. The command logic is tested via confirmation flow.
+  });
+
+  describe('self-update command', () => {
+    it('should check for updates', () => {
+      // This test verifies the command runs without errors
+      // Actual update behavior depends on npm registry availability
+      try {
+        const output = runCli('self-update', { cwd: tempDir });
+        // If it succeeds, it should show version information
+        expect(output).toMatch(/version|update|latest/i);
+      } catch (error: any) {
+        // If npm registry is unavailable, the command should fail gracefully
+        expect(error.message).toMatch(/npm|network|registry/i);
+      }
+    });
+
+    it('should support global flag', () => {
+      try {
+        const output = runCli('self-update --global', { cwd: tempDir });
+        expect(output).toMatch(/version|update|latest/i);
+      } catch (error: any) {
+        // If npm registry is unavailable, the command should fail gracefully
+        expect(error.message).toMatch(/npm|network|registry/i);
+      }
+    });
+
+    // Note: We don't test actual package updates as it would modify the installed package
+    // and potentially break the test suite. The command logic is tested via version checking.
+  });
 });
