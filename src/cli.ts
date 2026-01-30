@@ -6,13 +6,14 @@ import { execSync } from 'child_process';
 import { UrlReferenceMapper } from './UrlReferenceMapper';
 import { UrlMapping, ExportFormat } from './types';
 import * as yaml from 'js-yaml';
+import { VERSION } from './version';
 
 const program = new Command();
 
 program
   .name('url-ref-mapper')
   .description('CLI tool for managing URL-to-path mappings')
-  .version('1.2.0');
+  .version(VERSION);
 
 // Init command
 program
@@ -368,6 +369,15 @@ program
       console.error(`  ${(error as Error).message}`);
       process.exit(1);
     }
+  });
+
+// Version command (explicit command in addition to --version flag)
+program
+  .command('version')
+  .description('Display the current version of the URL reference mapper')
+  .action(() => {
+    console.log(`url-ref-mapper version ${VERSION}`);
+    console.log(`Package: @mytechtoday/url-reference-mapper`);
   });
 
 program.parse();

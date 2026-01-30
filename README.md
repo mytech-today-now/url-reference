@@ -215,6 +215,17 @@ npx url-ref-mapper self-update
 url-ref-mapper self-update --global
 ```
 
+### `version`
+Display the current version of the URL reference mapper.
+
+```bash
+# Show version information
+npx url-ref-mapper version
+
+# Or use the --version flag
+npx url-ref-mapper --version
+```
+
 ## 🤖 Augment AI Integration
 
 This package is designed to work seamlessly with Augment AI workflows:

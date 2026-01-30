@@ -387,4 +387,20 @@ describe('CLI Integration Tests', () => {
     // Note: We don't test actual package updates as it would modify the installed package
     // and potentially break the test suite. The command logic is tested via version checking.
   });
+
+  describe('version command', () => {
+    it('should display version information', () => {
+      const output = runCli('version', { cwd: tempDir });
+
+      expect(output).toContain('url-ref-mapper version');
+      expect(output).toContain('@mytechtoday/url-reference-mapper');
+      expect(output).toMatch(/\d+\.\d+\.\d+/); // Should contain a version number
+    });
+
+    it('should display version with --version flag', () => {
+      const output = runCli('--version', { cwd: tempDir });
+
+      expect(output).toMatch(/\d+\.\d+\.\d+/); // Should contain a version number
+    });
+  });
 });

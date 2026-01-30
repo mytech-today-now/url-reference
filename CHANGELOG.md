@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-01-30
+
+### Added
+- CLI `version` command for displaying current version information
+- `VERSION` constant exported from main package for programmatic access
+- Centralized version management in `src/version.ts`
+
+### Changed
+- CLI now uses VERSION constant instead of hardcoded version string
+- Version information is now available both via `version` command and `--version` flag
+
 ## [1.2.0] - 2026-01-30
 
 ### Added

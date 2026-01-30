@@ -33,3 +33,6 @@ export {
   getSchemaDefinition,
   listSchemaDefinitions,
 } from './schema';
+
+// Package version
+export { VERSION } from './version';
