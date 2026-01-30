@@ -126,6 +126,47 @@ program
     }
   });
 
+// List command
+program
+  .command('list')
+  .description('List all URL-to-path mappings')
+  .option('-c, --config <config>', 'Config file path', 'url-references.json')
+  .option('-f, --format <format>', 'Output format (table, json, yaml)', 'table')
+  .action((options) => {
+    const mapper = new UrlReferenceMapper({ configPath: options.config });
+    const mappings = mapper.getAllMappings();
+
+    if (mappings.length === 0) {
+      console.log('No mappings found.');
+      return;
+    }
+
+    const format = options.format.toLowerCase();
+
+    if (format === 'json') {
+      console.log(JSON.stringify(mappings, null, 2));
+    } else if (format === 'yaml') {
+      const yaml = require('js-yaml');
+      console.log(yaml.dump(mappings));
+    } else if (format === 'table') {
+      // Table format
+      console.log('\nURL Mappings:\n');
+      mappings.forEach((mapping, index) => {
+        console.log(`${index + 1}. ${mapping.title}`);
+        console.log(`   URL:  ${mapping.url}`);
+        console.log(`   Path: ${mapping.localPath}`);
+        if (mapping.lastUpdated) {
+          console.log(`   Last Updated: ${mapping.lastUpdated}`);
+        }
+        console.log('');
+      });
+      console.log(`Total: ${mappings.length} mapping(s)`);
+    } else {
+      console.error(`Error: Unsupported format '${options.format}'. Use 'table', 'json', or 'yaml'.`);
+      process.exit(1);
+    }
+  });
+
 // Validate command
 program
   .command('validate')
