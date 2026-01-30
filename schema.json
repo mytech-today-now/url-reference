@@ -1,0 +1,172 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/mytech-today-now/url-reference/schema.json",
+  "title": "URL Reference Mapper Schema",
+  "description": "JSON Schema for @mytechtoday/url-reference-mapper package types",
+  "definitions": {
+    "UrlMapping": {
+      "type": "object",
+      "description": "Represents a bidirectional mapping between a local filesystem path and a published internet URL",
+      "required": ["title", "url", "localPath"],
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Human-readable title for the mapping",
+          "minLength": 1,
+          "examples": [
+            "Copper ETFs and Investment Vehicles: 2026",
+            "Mid-Tier & Junior Copper Miners: 2026 Analysis"
+          ]
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Published internet URL (must be a valid HTTP/HTTPS URL)",
+          "pattern": "^https?://",
+          "examples": [
+            "https://mytech.today/copper-etfs-and-investment-vehicles-2026/",
+            "https://example.com/blog/post-title/"
+          ]
+        },
+        "localPath": {
+          "type": "string",
+          "description": "Local filesystem path (absolute or relative). Absolute paths are recommended.",
+          "minLength": 1,
+          "examples": [
+            "G:\\blogs\\copper-mining-part-4-etf-investment-vehicles.html",
+            "/home/user/projects/blogs/post.html",
+            "C:\\projects\\blogs\\post.html"
+          ]
+        },
+        "lastUpdated": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp of when the mapping was last updated",
+          "examples": [
+            "2026-01-27T17:04:00-06:00",
+            "2026-01-30T12:00:00Z"
+          ]
+        },
+        "metadata": {
+          "type": "object",
+          "description": "Optional additional metadata for the mapping",
+          "additionalProperties": true,
+          "examples": [
+            {
+              "category": "technology",
+              "tags": ["copper", "mining", "investment"],
+              "author": "John Doe"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "ValidationErrorType": {
+      "type": "string",
+      "enum": [
+        "duplicate_url",
+        "duplicate_path",
+        "invalid_url",
+        "missing_file",
+        "invalid_format"
+      ],
+      "description": "Types of validation errors that can occur"
+    },
+    "ValidationWarningType": {
+      "type": "string",
+      "enum": [
+        "outdated_timestamp",
+        "relative_path",
+        "missing_metadata"
+      ],
+      "description": "Types of validation warnings that can occur"
+    },
+    "ValidationError": {
+      "type": "object",
+      "required": ["type", "message"],
+      "properties": {
+        "type": {
+          "$ref": "#/definitions/ValidationErrorType"
+        },
+        "message": {
+          "type": "string",
+          "description": "Human-readable error message"
+        },
+        "mapping": {
+          "$ref": "#/definitions/UrlMapping",
+          "description": "The mapping that caused the error"
+        }
+      }
+    },
+    "ValidationWarning": {
+      "type": "object",
+      "required": ["type", "message"],
+      "properties": {
+        "type": {
+          "$ref": "#/definitions/ValidationWarningType"
+        },
+        "message": {
+          "type": "string",
+          "description": "Human-readable warning message"
+        },
+        "mapping": {
+          "$ref": "#/definitions/UrlMapping",
+          "description": "The mapping that caused the warning"
+        }
+      }
+    },
+    "ValidationResult": {
+      "type": "object",
+      "required": ["valid", "errors", "warnings"],
+      "properties": {
+        "valid": {
+          "type": "boolean",
+          "description": "Whether all mappings are valid"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ValidationError"
+          },
+          "description": "Array of validation errors"
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ValidationWarning"
+          },
+          "description": "Array of validation warnings"
+        }
+      }
+    },
+    "MapperConfig": {
+      "type": "object",
+      "description": "Configuration options for UrlReferenceMapper",
+      "properties": {
+        "configPath": {
+          "type": "string",
+          "description": "Path to configuration file (JSON or YAML)"
+        },
+        "mappings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/UrlMapping"
+          },
+          "description": "Inline mappings (alternative to configPath)"
+        },
+        "autoSave": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically save changes to file"
+        },
+        "validateOnLoad": {
+          "type": "boolean",
+          "default": true,
+          "description": "Validate mappings when loading"
+        }
+      }
+    }
+  }
+}
+

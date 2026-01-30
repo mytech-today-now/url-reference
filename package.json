@@ -9,6 +9,7 @@
   },
   "files": [
     "dist/",
+    "schema.json",
     "README.md",
     "LICENSE",
     "CHANGELOG.md"

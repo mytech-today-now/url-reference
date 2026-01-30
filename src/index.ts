@@ -17,3 +17,19 @@ export {
   ValidationWarningType,
   ExportFormat,
 } from './types';
+
+// Helper functions for beads tasks and Augment AI workflows
+export {
+  convertLocalLinksToPublished,
+  convertPublishedLinksToLocal,
+  batchConvertPathsToUrls,
+  batchConvertUrlsToPaths,
+} from './helpers';
+
+// JSON Schema for OpenSpec and API documentation
+export {
+  UrlMappingSchema,
+  getSchemaAsString,
+  getSchemaDefinition,
+  listSchemaDefinitions,
+} from './schema';
