@@ -11,7 +11,7 @@ const program = new Command();
 program
   .name('url-ref-mapper')
   .description('CLI tool for managing URL-to-path mappings')
-  .version('1.0.0');
+  .version('1.1.0');
 
 // Init command
 program
@@ -188,6 +188,65 @@ program
     }
 
     console.log('\n✓ All mappings are valid');
+  });
+
+// Update command
+program
+  .command('update <url>')
+  .description('Update an existing URL-to-path mapping')
+  .option('-t, --title <title>', 'New title of the mapping')
+  .option('-u, --new-url <newUrl>', 'New published URL')
+  .option('-p, --path <path>', 'New local filesystem path')
+  .option('-c, --config <config>', 'Config file path', 'url-references.json')
+  .action((url, options) => {
+    const mapper = new UrlReferenceMapper({
+      configPath: options.config,
+      autoSave: true
+    });
+
+    const updates: Partial<UrlMapping> = {};
+
+    if (options.title) updates.title = options.title;
+    if (options.newUrl) updates.url = options.newUrl;
+    if (options.path) updates.localPath = options.path;
+
+    if (Object.keys(updates).length === 0) {
+      console.error('Error: No updates specified. Use --title, --new-url, or --path');
+      process.exit(1);
+    }
+
+    try {
+      mapper.updateMapping(url, updates);
+      console.log(`✓ Updated mapping for: ${url}`);
+    } catch (error) {
+      console.error(`Error: ${(error as Error).message}`);
+      process.exit(1);
+    }
+  });
+
+// Delete command
+program
+  .command('delete <url>')
+  .description('Delete a URL-to-path mapping')
+  .option('-c, --config <config>', 'Config file path', 'url-references.json')
+  .action((url, options) => {
+    const mapper = new UrlReferenceMapper({
+      configPath: options.config,
+      autoSave: true
+    });
+
+    try {
+      const removed = mapper.removeMapping(url);
+      if (removed) {
+        console.log(`✓ Deleted mapping for: ${url}`);
+      } else {
+        console.error(`Error: No mapping found for URL: ${url}`);
+        process.exit(1);
+      }
+    } catch (error) {
+      console.error(`Error: ${(error as Error).message}`);
+      process.exit(1);
+    }
   });
 
 // Export command
