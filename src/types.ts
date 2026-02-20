@@ -12,6 +12,36 @@ export interface UrlMapping {
   lastUpdated?: string;
   /** Optional additional metadata */
   metadata?: Record<string, any>;
+
+  // Extracted metadata fields
+  /** Word count of the document */
+  wordCount?: number;
+  /** Reading time in minutes */
+  readingTime?: number;
+  /** Comma-separated tags */
+  tags?: string;
+  /** One-sentence summary */
+  summary?: string;
+  /** TLDR summary (200-900 characters) */
+  tldr?: string;
+  /** Comma-separated categories */
+  categories?: string;
+  /** Author name */
+  author?: string;
+  /** Featured images URLs */
+  featuredImages?: string[];
+  /** Author image URL */
+  authorImage?: string;
+  /** Author profile URL */
+  authorUrl?: string;
+  /** Extracted quotes */
+  quotes?: string[];
+  /** Internal links */
+  internalLinks?: string[];
+  /** External links */
+  externalLinks?: string[];
+  /** Related posts URLs */
+  relatedPosts?: string[];
 }
 
 /**
