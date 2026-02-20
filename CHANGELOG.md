@@ -5,7 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.0.0] - 2026-02-20
+## [2.0.0-alpha.2] - 2026-02-20
+
+### Added
+- **`update` command** - Update the CLI to the latest version
+  - Checks current version against npm registry
+  - Supports `--global` flag for global installations
+  - Provides clear feedback on update status
+- **`self-update` command** - Alias for `update` command (backward compatibility)
+
+### Changed
+- **Renamed** `update <url>` command to `update-mapping <url>` to avoid conflicts with new `update` command
+  - All functionality remains the same
+  - Updates existing URL-to-path mappings with new title, URL, or path
+
+### Fixed
+- Command naming conflicts between CLI update and mapping update operations
+
+## [2.0.0-alpha.1] - 2026-02-20
+
+### Added - Planning Release
+- Comprehensive documentation for planned v2.0.0 CLI enhancements
+- Detailed specification in `openspec/cli-enhancement/` directory
+- Bead tasks for implementation tracking
+
+**Note**: This is a planning/specification release. Features documented below are planned but not yet implemented.
+
+## [2.0.0] - 2026-02-20 (PLANNED)
 
 ### Added - Comprehensive CLI Enhancement
 

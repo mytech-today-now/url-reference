@@ -194,9 +194,9 @@ program
     console.log('\n✓ All mappings are valid');
   });
 
-// Update command
+// Update mapping command
 program
-  .command('update <url>')
+  .command('update-mapping <url>')
   .description('Update an existing URL-to-path mapping')
   .option('-t, --title <title>', 'New title of the mapping')
   .option('-u, --new-url <newUrl>', 'New published URL')
@@ -322,10 +322,59 @@ program
     }
   });
 
-// Self-update command
+// Update CLI command
+program
+  .command('update')
+  .description('Update the URL reference mapper CLI to the latest version')
+  .option('-g, --global', 'Update global installation', false)
+  .action((options) => {
+    const packageName = '@mytechtoday/url-reference-mapper';
+    const isGlobal = options.global;
+
+    console.log(`\nChecking for updates to ${packageName}...\n`);
+
+    try {
+      // Get current version
+      const currentVersion = program.version();
+      console.log(`Current version: ${currentVersion}`);
+
+      // Get latest version from npm
+      const latestVersionCmd = `npm view ${packageName} version`;
+      const latestVersion = execSync(latestVersionCmd, { encoding: 'utf-8' }).trim();
+      console.log(`Latest version:  ${latestVersion}\n`);
+
+      if (currentVersion === latestVersion) {
+        console.log('✓ You are already using the latest version!');
+        process.exit(0);
+      }
+
+      // Update the package
+      const updateCmd = isGlobal
+        ? `npm install -g ${packageName}@latest`
+        : `npm install ${packageName}@latest`;
+
+      console.log(`Updating from v${currentVersion} to v${latestVersion}...\n`);
+      console.log(`Running: ${updateCmd}\n`);
+      execSync(updateCmd, { stdio: 'inherit' });
+
+      console.log(`\n✓ Successfully updated to v${latestVersion}`);
+
+      if (isGlobal) {
+        console.log('  Run "url-ref-mapper --version" to verify the update.');
+      } else {
+        console.log('  The package has been updated in your project dependencies.');
+      }
+    } catch (error) {
+      console.error(`\n✗ Failed to update ${packageName}`);
+      console.error(`  ${(error as Error).message}`);
+      process.exit(1);
+    }
+  });
+
+// Self-update command (alias for 'update')
 program
   .command('self-update')
-  .description('Update the URL reference mapper CLI to the latest version')
+  .description('Update the URL reference mapper CLI to the latest version (alias for "update")')
   .option('-g, --global', 'Update global installation', false)
   .action((options) => {
     const packageName = '@mytechtoday/url-reference-mapper';
