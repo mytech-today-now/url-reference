@@ -124,7 +124,6 @@ The `@mytechtoday/url-reference` package is **production-ready** and fully valid
 6. **Agent Instructions**
    - `AGENTS.md` - Beads workflow guide
    - Landing the plane checklist
-   - Augment Extensions integration
 
 ---
 

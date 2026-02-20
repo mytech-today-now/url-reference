@@ -249,19 +249,6 @@ import { UrlReferenceMapper } from '@mytechtoday/url-reference';
 const mapper = new UrlReferenceMapper({ configPath: './url-references.json' });
 ```
 
-### With Augment Extensions
-
-This package works alongside `@mytechtoday/augment-extensions`:
-
-```bash
-# Install both
-npm install -g @mytechtoday/augment-extensions
-npm install @mytechtoday/url-reference
-
-# Use together in your project
-augx link coding-standards/typescript
-```
-
 ## 📁 Configuration File Format
 
 ### JSON Format (default)
@@ -416,7 +403,6 @@ MIT License - see [LICENSE](LICENSE) file for details.
 - [Augment Code AI](https://www.augmentcode.com/) - AI coding assistant
 - [OpenSpec](https://github.com/Fission-AI/OpenSpec) - Spec-driven development
 - [Beads](https://github.com/steveyegge/beads) - Distributed issue tracker
-- [Augment Extensions](https://github.com/mytech-today-now/augment) - Extension modules for Augment AI
 
 ## 📞 Support
 
