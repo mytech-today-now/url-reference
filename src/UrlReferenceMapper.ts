@@ -9,6 +9,7 @@ import {
   ValidationWarning,
   ExportFormat,
 } from './types';
+import { extractMetadata, ExtractedMetadata, ExtractionConfig } from './extractors';
 
 /**
  * Main class for managing bidirectional URL-to-path mappings
@@ -196,6 +197,13 @@ export class UrlReferenceMapper {
   }
 
   /**
+   * Get a mapping by URL
+   */
+  getMapping(url: string): UrlMapping | null {
+    return this.urlToMapping.get(url) || null;
+  }
+
+  /**
    * Get all mappings
    */
   getAllMappings(): UrlMapping[] {
@@ -350,5 +358,70 @@ export class UrlReferenceMapper {
       default:
         throw new Error(`Unsupported export format: ${format}`);
     }
+  }
+
+  /**
+   * Extract metadata from a document file
+   *
+   * @param filePath - Path to the document file
+   * @param config - Optional extraction configuration
+   * @returns Extracted metadata
+   */
+  async extractMetadataFromFile(
+    filePath: string,
+    config?: ExtractionConfig
+  ): Promise<ExtractedMetadata> {
+    return extractMetadata(filePath, config);
+  }
+
+  /**
+   * Add a mapping with automatic metadata extraction
+   *
+   * @param url - Published URL
+   * @param localPath - Local filesystem path
+   * @param title - Title for the mapping
+   * @param config - Optional extraction configuration
+   */
+  async addMappingWithExtraction(
+    url: string,
+    localPath: string,
+    title: string,
+    config?: ExtractionConfig
+  ): Promise<void> {
+    // Extract metadata from the file
+    const metadata = await this.extractMetadataFromFile(localPath, config);
+
+    // Create the mapping with extracted metadata
+    const mapping: UrlMapping = {
+      title,
+      url,
+      localPath,
+      lastUpdated: new Date().toISOString(),
+      ...metadata,
+    };
+
+    this.addMapping(mapping);
+  }
+
+  /**
+   * Update a mapping with fresh metadata extraction
+   *
+   * @param url - URL of the mapping to update
+   * @param config - Optional extraction configuration
+   */
+  async updateMappingWithExtraction(
+    url: string,
+    config?: ExtractionConfig
+  ): Promise<void> {
+    const mapping = this.urlToMapping.get(url);
+    if (!mapping) {
+      throw new Error(`Mapping not found for URL: ${url}`);
+    }
+
+    // Extract fresh metadata
+    const metadata = await this.extractMetadataFromFile(mapping.localPath, config);
+
+    // Update the mapping
+    this.updateMapping(url, metadata);
   }
 }

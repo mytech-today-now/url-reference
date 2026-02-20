@@ -499,4 +499,177 @@ describe('UrlReferenceMapper', () => {
       expect(mapper.getAllMappings()).toHaveLength(2);
     });
   });
+
+  describe('Metadata Extraction Integration', () => {
+    it('should extract metadata from Markdown file', async () => {
+      const content = `---
+author: John Doe
+tags: typescript, testing
+---
+
+# Test Document
+
+This is a test document with enough content to create a meaningful summary. It contains multiple paragraphs and various elements to test the extraction functionality.
+
+> This is an important quote.
+
+Check out [this link](https://example.com/page).
+
+![Image](https://example.com/image.jpg)`;
+
+      const filePath = path.join(tempDir, 'test.md');
+      fs.writeFileSync(filePath, content);
+
+      const mapper = new UrlReferenceMapper();
+      const metadata = await mapper.extractMetadataFromFile(filePath);
+
+      expect(metadata.author).toBe('John Doe');
+      expect(metadata.tags).toBe('typescript, testing');
+      expect(metadata.wordCount).toBeGreaterThan(0);
+      expect(metadata.readingTime).toBeGreaterThan(0);
+      expect(metadata.quotes).toBeDefined();
+      expect(metadata.quotes!.length).toBeGreaterThan(0);
+      expect(metadata.featuredImages).toBeDefined();
+      expect(metadata.summary).toBeDefined();
+    });
+
+    it('should extract metadata from HTML file', async () => {
+      const content = `<!DOCTYPE html>
+<html>
+<head>
+  <meta name="author" content="Jane Smith">
+  <meta name="description" content="Test description">
+  <meta name="keywords" content="html, testing">
+</head>
+<body>
+  <h1>Test Article</h1>
+  <p>This is a test article with enough content to create a meaningful TLDR summary. It needs to be at least 200 characters long to be considered valid. This paragraph continues with more information about the topic being discussed.</p>
+  <blockquote>Important quote here</blockquote>
+  <a href="https://example.com/page">Link</a>
+  <img src="https://example.com/image.jpg" alt="Test">
+</body>
+</html>`;
+
+      const filePath = path.join(tempDir, 'test.html');
+      fs.writeFileSync(filePath, content);
+
+      const mapper = new UrlReferenceMapper();
+      const metadata = await mapper.extractMetadataFromFile(filePath);
+
+      expect(metadata.author).toBe('Jane Smith');
+      expect(metadata.summary).toBe('Test description');
+      expect(metadata.tags).toBe('html, testing');
+      expect(metadata.wordCount).toBeGreaterThan(0);
+      expect(metadata.quotes).toBeDefined();
+      expect(metadata.featuredImages).toBeDefined();
+    });
+
+    it('should extract metadata from plain text file', async () => {
+      const content = `This is a plain text document with enough content to test extraction.
+
+This is the first meaningful paragraph that should be extracted as a summary. It contains enough text to be considered valid and useful for readers who want a quick overview.
+
+This is a second paragraph that adds more context and details. It helps to reach the minimum character count for a proper TLDR summary that provides value to readers.
+
+Check out https://example.com/page for more info.`;
+
+      const filePath = path.join(tempDir, 'test.txt');
+      fs.writeFileSync(filePath, content);
+
+      const mapper = new UrlReferenceMapper();
+      const metadata = await mapper.extractMetadataFromFile(filePath);
+
+      expect(metadata.wordCount).toBeGreaterThan(0);
+      expect(metadata.readingTime).toBeGreaterThan(0);
+      expect(metadata.summary).toBeDefined();
+      expect(metadata.tldr).toBeDefined();
+    });
+
+    it('should add mapping with automatic metadata extraction', async () => {
+      const content = `---
+author: Test Author
+tags: test, integration
+---
+
+# Integration Test
+
+This is a test document for integration testing. It has enough content to extract meaningful metadata including word count, reading time, and summary information.
+
+> A notable quote from the document.`;
+
+      const filePath = path.join(tempDir, 'integration.md');
+      fs.writeFileSync(filePath, content);
+
+      const mapper = new UrlReferenceMapper();
+      await mapper.addMappingWithExtraction(
+        'https://example.com/integration/',
+        filePath,
+        'Integration Test'
+      );
+
+      const mapping = mapper.getMapping('https://example.com/integration/');
+      expect(mapping).toBeDefined();
+      expect(mapping!.title).toBe('Integration Test');
+      expect(mapping!.author).toBe('Test Author');
+      expect(mapping!.tags).toBe('test, integration');
+      expect(mapping!.wordCount).toBeGreaterThan(0);
+      expect(mapping!.readingTime).toBeGreaterThan(0);
+      expect(mapping!.quotes).toBeDefined();
+    });
+
+    it('should update mapping with fresh metadata extraction', async () => {
+      const content1 = `# Original Content
+
+This is the original content with some text.`;
+
+      const filePath = path.join(tempDir, 'update-test.md');
+      fs.writeFileSync(filePath, content1);
+
+      const mapper = new UrlReferenceMapper();
+      await mapper.addMappingWithExtraction(
+        'https://example.com/update-test/',
+        filePath,
+        'Update Test'
+      );
+
+      const originalMapping = mapper.getMapping('https://example.com/update-test/');
+      const originalWordCount = originalMapping!.wordCount;
+
+      // Update the file with more content
+      const content2 = `# Updated Content
+
+This is the updated content with much more text to increase the word count significantly. We add multiple paragraphs to ensure the word count changes.
+
+This is another paragraph with additional content.`;
+
+      fs.writeFileSync(filePath, content2);
+
+      // Update the mapping with fresh extraction
+      await mapper.updateMappingWithExtraction('https://example.com/update-test/');
+
+      const updatedMapping = mapper.getMapping('https://example.com/update-test/');
+      expect(updatedMapping!.wordCount).toBeGreaterThan(originalWordCount!);
+    });
+
+    it('should handle extraction with custom configuration', async () => {
+      const content = Array.from({ length: 500 }, () => 'word').join(' ');
+      const filePath = path.join(tempDir, 'custom-config.md');
+      fs.writeFileSync(filePath, content);
+
+      const mapper = new UrlReferenceMapper();
+      const metadata = await mapper.extractMetadataFromFile(filePath, {
+        readingSpeed: 200,
+      });
+
+      expect(metadata.readingTime).toBe(Math.ceil(500 / 200));
+    });
+
+    it('should handle extraction errors gracefully', async () => {
+      const mapper = new UrlReferenceMapper();
+
+      await expect(
+        mapper.extractMetadataFromFile('/non/existent/file.md')
+      ).rejects.toThrow('File not found');
+    });
+  });
 });
