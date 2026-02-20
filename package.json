@@ -1,7 +1,7 @@
 {
   "name": "@mytechtoday/url-reference-mapper",
-  "version": "2.0.0",
-  "description": "Bidirectional mapping between local filesystem paths and published internet URLs for Augment AI workflows. Enhanced CLI with comprehensive help system, advanced features, and utility commands.",
+  "version": "2.0.0-alpha.1",
+  "description": "Bidirectional mapping between local filesystem paths and published internet URLs for Augment AI workflows. v2.0.0 planning: Enhanced CLI with comprehensive help system, advanced features, and utility commands (in development).",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {

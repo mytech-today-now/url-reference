@@ -5,7 +5,9 @@
 [![npm version](https://img.shields.io/npm/v/@mytechtoday/url-reference.svg)](https://www.npmjs.com/package/@mytechtoday/url-reference)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> **Version 2.0.0** - Enhanced CLI with comprehensive help system, advanced features, and utility commands
+> **Version 2.0.0-alpha.1** - Planning release for enhanced CLI with comprehensive help system, advanced features, and utility commands
+>
+> ⚠️ **Note:** v2.0.0 features are documented but not yet implemented. This is a planning/specification release. See `openspec/cli-enhancement/` for complete specifications and `bead-tasks-cli-enhancement.md` for implementation tasks.
 
 ## 🎯 Purpose
 
