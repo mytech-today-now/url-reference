@@ -1,0 +1,218 @@
+openapi: 3.1.0
+info:
+  title: URL Reference Mapper - Help System Specification
+  version: 2.0.0
+  description: |
+    Comprehensive help system specification for the URL Reference Mapper CLI.
+    Every command must support --help and -h options with detailed documentation.
+  contact:
+    name: MyTech.Today
+    url: https://github.com/mytech-today-now/url-reference
+
+components:
+  schemas:
+    HelpTemplate:
+      type: object
+      required:
+        - command
+        - description
+        - usage
+        - options
+        - examples
+      properties:
+        command:
+          type: string
+          description: Command name
+          example: "add"
+        description:
+          type: string
+          description: Brief command description
+          example: "Add a new URL mapping to the configuration"
+        usage:
+          type: string
+          description: Usage syntax
+          example: "url-ref add <url> <localPath> [options]"
+        options:
+          type: array
+          items:
+            $ref: '#/components/schemas/HelpOption'
+        examples:
+          type: array
+          items:
+            type: string
+          description: Usage examples
+          minItems: 1
+        exitCodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExitCode'
+        relatedCommands:
+          type: array
+          items:
+            type: string
+          description: Related command names
+          example: ["remove", "list", "validate"]
+
+    HelpOption:
+      type: object
+      required:
+        - flags
+        - description
+      properties:
+        flags:
+          type: string
+          description: Option flags
+          example: "-e, --extract"
+        description:
+          type: string
+          description: Option description
+          example: "Extract metadata from document"
+        defaultValue:
+          type: string
+          description: Default value if any
+          example: "false"
+
+    ExitCode:
+      type: object
+      required:
+        - code
+        - description
+      properties:
+        code:
+          type: integer
+          description: Exit code number
+          example: 0
+        description:
+          type: string
+          description: Exit code meaning
+          example: "Success"
+
+    HelpOutput:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [full, brief, global]
+        content:
+          type: string
+          description: Formatted help text
+
+paths:
+  /cli/help:
+    get:
+      summary: Get help information
+      description: Retrieve help information for commands
+      parameters:
+        - name: command
+          in: query
+          schema:
+            type: string
+          description: Specific command to get help for
+        - name: format
+          in: query
+          schema:
+            type: string
+            enum: [full, brief]
+            default: full
+      responses:
+        '200':
+          description: Help information retrieved
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: |
+                  url-ref add - Add a new URL mapping
+                  
+                  Usage: url-ref add <url> <localPath> [options]
+                  
+                  Options:
+                    -e, --extract        Extract metadata from document
+                    -t, --title <title>  Document title
+                    -h                   Show brief help
+                    --help               Show detailed help
+                  
+                  Examples:
+                    $ url-ref add https://example.com ./doc.md --extract
+                    $ url-ref add https://example.com ./doc.md --title "Example"
+                  
+                  Exit Codes:
+                    0  Success
+                    1  Invalid arguments
+                    2  File not found
+                  
+                  Related Commands:
+                    remove, list, validate
+
+# Help System Requirements
+x-requirements:
+  help-options:
+    - Every command MUST support --help option
+    - Every command MUST support -h option
+    - --help shows detailed help (full format)
+    - -h shows brief help (summary format)
+  
+  help-content:
+    - Command description and purpose
+    - Usage syntax with placeholders
+    - All options with descriptions
+    - At least 2 usage examples
+    - Exit codes with descriptions
+    - Related commands list
+  
+  help-formatting:
+    - Use colors for better readability
+    - Align option descriptions
+    - Indent examples
+    - Use boxen for important messages
+    - Support --no-color option
+  
+  global-help:
+    - url-ref --help shows all commands
+    - url-ref -h shows command list only
+    - url-ref help <cmd> shows command help
+    - Help for non-existent command shows error
+
+# Implementation Notes
+x-implementation:
+  classes:
+    HelpRenderer:
+      description: Renders help text with formatting
+      methods:
+        - renderFull(template: HelpTemplate): string
+        - renderBrief(template: HelpTemplate): string
+        - renderGlobal(commands: HelpTemplate[]): string
+    
+    HelpRegistry:
+      description: Stores and retrieves help templates
+      methods:
+        - register(template: HelpTemplate): void
+        - get(command: string): HelpTemplate
+        - getAll(): HelpTemplate[]
+  
+  dependencies:
+    - chalk: "^5.2.0"  # Colored output
+    - boxen: "^7.0.1"  # Boxed messages
+    - cli-table3: "^0.6.3"  # Table formatting
+
+# Test Requirements
+x-testing:
+  unit-tests:
+    - Test HelpRenderer.renderFull()
+    - Test HelpRenderer.renderBrief()
+    - Test HelpRenderer.renderGlobal()
+    - Test HelpRegistry.register()
+    - Test HelpRegistry.get()
+    - Test help text formatting
+    - Test color output
+    - Test --no-color option
+  
+  integration-tests:
+    - Test --help for each command
+    - Test -h for each command
+    - Test global help
+    - Test help for non-existent command
+    - Test help with invalid options
+  
+  coverage-target: 100%
+

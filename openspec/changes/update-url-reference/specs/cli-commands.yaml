@@ -1,0 +1,552 @@
+# URL Reference Mapper - CLI Commands Specification v2.0
+
+version: 2.0.0
+description: |
+  Command-line interface specification for URL Reference Mapper v2.0.
+  Defines all CLI commands, arguments, options, and behaviors.
+
+global_options:
+  - name: --config
+    alias: -c
+    type: string
+    description: Path to configuration file
+    default: ./url-references.json
+    example: url-ref --config ./custom-config.json list
+  
+  - name: --verbose
+    alias: -v
+    type: boolean
+    description: Enable verbose output
+    default: false
+    example: url-ref -v add https://example.com ./doc.md
+  
+  - name: --debug
+    type: boolean
+    description: Enable debug mode with detailed logging
+    default: false
+    example: url-ref --debug validate
+  
+  - name: --dry-run
+    type: boolean
+    description: Preview changes without applying them
+    default: false
+    example: url-ref --dry-run remove-invalid --urls
+  
+  - name: --no-backup
+    type: boolean
+    description: Skip automatic backup before destructive operations
+    default: false
+    example: url-ref --no-backup clean
+  
+  - name: --help
+    alias: -h
+    type: boolean
+    description: Display help information
+    example: url-ref --help
+
+commands:
+  # ============================================================================
+  # INITIALIZATION
+  # ============================================================================
+  
+  init:
+    description: Initialize a new URL reference configuration file
+    usage: url-ref init [options]
+    options:
+      - name: --format
+        type: string
+        choices: [json, yaml]
+        default: json
+        description: Configuration file format
+      - name: --output
+        alias: -o
+        type: string
+        description: Output file path
+        default: ./url-references.json
+    examples:
+      - command: url-ref init
+        description: Create default JSON config
+      - command: url-ref init --format yaml --output ./refs.yaml
+        description: Create YAML config with custom path
+    exit_codes:
+      0: Success
+      1: File already exists
+      2: Invalid options
+  
+  # ============================================================================
+  # DOCUMENT MANAGEMENT
+  # ============================================================================
+  
+  add:
+    description: Add a new URL mapping with optional metadata extraction
+    usage: url-ref add <url> <localPath> [options]
+    arguments:
+      - name: url
+        type: string
+        required: true
+        description: Published internet URL
+        validation: Must be valid HTTP/HTTPS URL
+      - name: localPath
+        type: string
+        required: true
+        description: Local filesystem path to document
+        validation: File must exist if --extract is used
+    options:
+      - name: --extract
+        alias: -e
+        type: boolean
+        default: false
+        description: Extract metadata from document
+      - name: --title
+        alias: -t
+        type: string
+        description: Document title (required if not extracting)
+      - name: --author
+        type: string
+        description: Author name
+      - name: --categories
+        type: string
+        description: Comma-separated categories
+      - name: --tags
+        type: string
+        description: Comma-separated tags
+      - name: --no-validate
+        type: boolean
+        default: false
+        description: Skip validation
+    examples:
+      - command: url-ref add https://example.com/doc ./docs/example.md --extract
+        description: Add with automatic metadata extraction
+      - command: url-ref add https://example.com/doc ./docs/example.md --title "Example Doc" --author "John Doe"
+        description: Add with manual metadata
+    exit_codes:
+      0: Success
+      1: Invalid URL or path
+      2: Duplicate entry (if allowDuplicates is false)
+      3: Extraction failed
+      4: Validation failed
+  
+  update:
+    description: Update an existing URL mapping with optional re-extraction
+    usage: url-ref update <url> [options]
+    arguments:
+      - name: url
+        type: string
+        required: true
+        description: URL of the mapping to update
+    options:
+      - name: --extract
+        alias: -e
+        type: boolean
+        default: false
+        description: Re-extract metadata from document
+      - name: --title
+        type: string
+        description: Update title
+      - name: --author
+        type: string
+        description: Update author
+      - name: --categories
+        type: string
+        description: Update categories
+      - name: --local-path
+        type: string
+        description: Update local path
+    examples:
+      - command: url-ref update https://example.com/doc --extract
+        description: Re-extract metadata for existing mapping
+      - command: url-ref update https://example.com/doc --title "New Title"
+        description: Update specific fields
+    exit_codes:
+      0: Success
+      1: Mapping not found
+      2: Invalid options
+      3: Extraction failed
+  
+  list:
+    description: List all URL mappings
+    usage: url-ref list [options]
+    options:
+      - name: --format
+        alias: -f
+        type: string
+        choices: [table, json, csv, compact]
+        default: table
+        description: Output format
+      - name: --filter
+        type: string
+        description: Filter by property value (e.g., "author=John")
+      - name: --sort
+        type: string
+        choices: [title, url, lastUpdated, wordCount]
+        default: lastUpdated
+        description: Sort by field
+      - name: --order
+        type: string
+        choices: [asc, desc]
+        default: desc
+        description: Sort order
+    examples:
+      - command: url-ref list
+        description: List all mappings in table format
+      - command: url-ref list --format json --filter "author=John"
+        description: List as JSON, filtered by author
+      - command: url-ref list --sort wordCount --order desc
+        description: List sorted by word count (descending)
+    exit_codes:
+      0: Success
+      1: Invalid options
+  
+  # ============================================================================
+  # REMOVAL OPERATIONS
+  # ============================================================================
+  
+  remove:
+    description: Remove a URL mapping by URL
+    usage: url-ref remove <url> [options]
+    arguments:
+      - name: url
+        type: string
+        required: true
+        description: URL of the mapping to remove
+    options:
+      - name: --force
+        alias: -f
+        type: boolean
+        default: false
+        description: Skip confirmation prompt
+    examples:
+      - command: url-ref remove https://example.com/doc
+        description: Remove mapping (with confirmation)
+      - command: url-ref remove https://example.com/doc --force
+        description: Remove without confirmation
+    exit_codes:
+      0: Success
+      1: Mapping not found
+      2: User cancelled
+  
+  remove-by-date:
+    description: Remove mappings by date range
+    usage: url-ref remove-by-date [options]
+    options:
+      - name: --before
+        type: string
+        description: Remove entries before this date (ISO 8601)
+      - name: --after
+        type: string
+        description: Remove entries after this date (ISO 8601)
+      - name: --between
+        type: string
+        description: Remove entries between dates (comma-separated)
+      - name: --force
+        alias: -f
+        type: boolean
+        default: false
+        description: Skip confirmation prompt
+    examples:
+      - command: url-ref remove-by-date --before 2025-01-01
+        description: Remove all entries before 2025
+      - command: url-ref remove-by-date --between "2024-01-01,2024-12-31"
+        description: Remove entries from 2024
+    exit_codes:
+      0: Success
+      1: Invalid date format
+      2: No matches found
+      3: User cancelled
+
+  remove-by-property:
+    description: Remove mappings where property contains specific value(s)
+    usage: url-ref remove-by-property <property> <value> [options]
+    arguments:
+      - name: property
+        type: string
+        required: true
+        description: Property name to filter by
+      - name: value
+        type: string
+        required: true
+        description: Value to search for (supports comma-separated values)
+    options:
+      - name: --case-sensitive
+        type: boolean
+        default: false
+        description: Case-sensitive matching
+      - name: --force
+        alias: -f
+        type: boolean
+        default: false
+        description: Skip confirmation prompt
+    examples:
+      - command: url-ref remove-by-property author "John Doe"
+        description: Remove all entries by John Doe
+      - command: url-ref remove-by-property categories "deprecated,old"
+        description: Remove entries with deprecated or old categories
+    exit_codes:
+      0: Success
+      1: Invalid property name
+      2: No matches found
+      3: User cancelled
+
+  remove-invalid:
+    description: Remove mappings with invalid URLs or paths
+    usage: url-ref remove-invalid [options]
+    options:
+      - name: --urls
+        type: boolean
+        description: Remove entries with invalid URLs only
+      - name: --paths
+        type: boolean
+        description: Remove entries with invalid paths only
+      - name: --both
+        type: boolean
+        description: Remove entries with both invalid
+      - name: --force
+        alias: -f
+        type: boolean
+        default: false
+        description: Skip confirmation prompt
+    examples:
+      - command: url-ref remove-invalid --urls
+        description: Remove entries with invalid URLs
+      - command: url-ref remove-invalid --paths
+        description: Remove entries with invalid file paths
+      - command: url-ref remove-invalid --both
+        description: Remove entries with both invalid
+    exit_codes:
+      0: Success
+      1: Invalid options
+      2: No invalid entries found
+      3: User cancelled
+
+  clean:
+    description: Interactive cleanup wizard for removing stale/invalid entries
+    usage: url-ref clean [options]
+    options:
+      - name: --interactive
+        alias: -i
+        type: boolean
+        default: true
+        description: Interactive mode with prompts
+      - name: --auto
+        type: boolean
+        default: false
+        description: Automatic cleanup (non-interactive)
+    examples:
+      - command: url-ref clean
+        description: Start interactive cleanup wizard
+      - command: url-ref clean --auto
+        description: Automatic cleanup with defaults
+    exit_codes:
+      0: Success
+      1: User cancelled
+      2: Cleanup failed
+
+  # ============================================================================
+  # IMPORT/EXPORT
+  # ============================================================================
+
+  export:
+    description: Export URL mappings to CSV format
+    usage: url-ref export <output> [options]
+    arguments:
+      - name: output
+        type: string
+        required: true
+        description: Output CSV file path
+    options:
+      - name: --fields
+        type: string
+        description: Comma-separated list of fields to export (default: all)
+      - name: --filter
+        type: string
+        description: Filter by property value
+    examples:
+      - command: url-ref export ./references.csv
+        description: Export all mappings to CSV
+      - command: url-ref export ./refs.csv --fields "title,url,author"
+        description: Export specific fields only
+      - command: url-ref export ./refs.csv --filter "author=John"
+        description: Export filtered mappings
+    exit_codes:
+      0: Success
+      1: Invalid output path
+      2: Export failed
+
+  import:
+    description: Import URL mappings from CSV format
+    usage: url-ref import <input> [options]
+    arguments:
+      - name: input
+        type: string
+        required: true
+        description: Input CSV file path
+    options:
+      - name: --merge
+        alias: -m
+        type: boolean
+        default: false
+        description: Merge with existing mappings (default: replace)
+      - name: --validate
+        type: boolean
+        default: true
+        description: Validate imported data
+      - name: --skip-errors
+        type: boolean
+        default: false
+        description: Skip invalid rows and continue
+    examples:
+      - command: url-ref import ./references.csv
+        description: Import mappings from CSV (replace existing)
+      - command: url-ref import ./refs.csv --merge
+        description: Import and merge with existing
+      - command: url-ref import ./refs.csv --skip-errors
+        description: Import, skipping invalid rows
+    exit_codes:
+      0: Success
+      1: File not found
+      2: Invalid CSV format
+      3: Validation failed
+      4: Import failed
+
+  # ============================================================================
+  # VALIDATION
+  # ============================================================================
+
+  validate:
+    description: Validate all URL mappings
+    usage: url-ref validate [options]
+    options:
+      - name: --urls
+        type: boolean
+        description: Validate URLs only
+      - name: --paths
+        type: boolean
+        description: Validate file paths only
+      - name: --metadata
+        type: boolean
+        description: Validate metadata only
+      - name: --fix
+        type: boolean
+        default: false
+        description: Attempt to auto-fix issues
+      - name: --report
+        type: string
+        description: Save validation report to file
+    examples:
+      - command: url-ref validate
+        description: Validate all mappings
+      - command: url-ref validate --urls --paths
+        description: Validate URLs and paths only
+      - command: url-ref validate --fix
+        description: Validate and auto-fix issues
+      - command: url-ref validate --report ./validation-report.json
+        description: Save validation report
+    exit_codes:
+      0: All valid
+      1: Validation errors found
+      2: Validation failed
+
+  # ============================================================================
+  # UTILITIES
+  # ============================================================================
+
+  migrate:
+    description: Migrate configuration from v1.0 to v2.0 format
+    usage: url-ref migrate <input> <output> [options]
+    arguments:
+      - name: input
+        type: string
+        required: true
+        description: Input v1.0 config file
+      - name: output
+        type: string
+        required: true
+        description: Output v2.0 config file
+    options:
+      - name: --backup
+        type: boolean
+        default: true
+        description: Create backup of input file
+    examples:
+      - command: url-ref migrate ./old-config.json ./new-config.json
+        description: Migrate v1.0 to v2.0
+      - command: url-ref migrate ./old.json ./new.json --no-backup
+        description: Migrate without backup
+    exit_codes:
+      0: Success
+      1: Invalid input file
+      2: Migration failed
+
+  restore:
+    description: Restore configuration from backup
+    usage: url-ref restore <backup> [options]
+    arguments:
+      - name: backup
+        type: string
+        required: true
+        description: Backup file path
+    options:
+      - name: --output
+        alias: -o
+        type: string
+        description: Output file path (default: original location)
+    examples:
+      - command: url-ref restore ./.backups/url-references-backup-20260220.json
+        description: Restore from backup
+    exit_codes:
+      0: Success
+      1: Backup file not found
+      2: Restore failed
+
+# ============================================================================
+# OUTPUT FORMATS
+# ============================================================================
+
+output_formats:
+  table:
+    description: Human-readable table format
+    example: |
+      ┌─────────────────────────────────────────────────────────────────┐
+      │ Title                    │ URL                  │ Last Updated │
+      ├─────────────────────────────────────────────────────────────────┤
+      │ TypeScript Intro         │ https://example.com  │ 2026-02-20   │
+      │ JavaScript Basics        │ https://example.org  │ 2026-02-19   │
+      └─────────────────────────────────────────────────────────────────┘
+
+  json:
+    description: JSON format for programmatic use
+    example: |
+      [
+        {
+          "title": "TypeScript Intro",
+          "url": "https://example.com",
+          "lastUpdated": "2026-02-20T08:53:01.001Z"
+        }
+      ]
+
+  csv:
+    description: CSV format for spreadsheet import
+    example: |
+      title,url,localPath,lastUpdated
+      "TypeScript Intro","https://example.com","./docs/ts.md","2026-02-20T08:53:01.001Z"
+
+  compact:
+    description: Compact single-line format
+    example: |
+      TypeScript Intro (https://example.com) - Updated: 2026-02-20
+
+# ============================================================================
+# ERROR MESSAGES
+# ============================================================================
+
+error_messages:
+  INVALID_URL: "Invalid URL format. Must be a valid HTTP or HTTPS URL."
+  INVALID_PATH: "Invalid file path. File does not exist or is not accessible."
+  DUPLICATE_ENTRY: "Duplicate entry. URL already exists in configuration."
+  EXTRACTION_FAILED: "Metadata extraction failed. Check file format and permissions."
+  VALIDATION_FAILED: "Validation failed. Use --verbose for details."
+  FILE_NOT_FOUND: "File not found: {path}"
+  PERMISSION_DENIED: "Permission denied: {path}"
+  INVALID_DATE: "Invalid date format. Use ISO 8601 format (YYYY-MM-DD)."
+  NO_MATCHES: "No matching entries found."
+  USER_CANCELLED: "Operation cancelled by user."

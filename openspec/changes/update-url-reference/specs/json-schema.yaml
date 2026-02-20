@@ -1,0 +1,221 @@
+# URL Reference Mapper - JSON Schema Specification v2.0
+
+openapi: 3.0.0
+info:
+  title: URL Reference Mapper JSON Schema
+  version: 2.0.0
+  description: |
+    JSON Schema specification for URL Reference Mapper v2.0 configuration files.
+    This schema defines the structure and validation rules for url-references.json files.
+
+components:
+  schemas:
+    UrlMapping:
+      type: object
+      required:
+        - title
+        - url
+        - localPath
+        - lastUpdated
+      properties:
+        title:
+          type: string
+          description: Human-readable title of the document
+          minLength: 1
+          maxLength: 500
+          example: "Getting Started with TypeScript"
+        
+        url:
+          type: string
+          format: uri
+          description: Published internet URL
+          pattern: '^https?://'
+          example: "https://www.typescriptlang.org/docs/handbook/intro.html"
+        
+        localPath:
+          type: string
+          description: Local filesystem path (absolute or relative)
+          minLength: 1
+          example: "./docs/typescript-intro.md"
+        
+        lastUpdated:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp of last modification
+          example: "2026-02-20T08:53:01.001Z"
+        
+        # Content metadata
+        tags:
+          type: string
+          description: Comma-separated SEO tags (~35 tags recommended)
+          maxLength: 2000
+          example: "typescript, javascript, programming, web development, types, static typing"
+        
+        summary:
+          type: string
+          description: One-sentence summary of the document
+          maxLength: 500
+          example: "An introduction to TypeScript's type system and basic concepts."
+        
+        tldr:
+          type: string
+          description: Brief summary (200-900 characters)
+          minLength: 200
+          maxLength: 900
+          example: "TypeScript is a typed superset of JavaScript that compiles to plain JavaScript. It adds optional static typing, classes, and interfaces to JavaScript, making it easier to build and maintain large-scale applications."
+        
+        wordCount:
+          type: integer
+          description: Total word count of the document
+          minimum: 0
+          example: 1250
+        
+        readingTime:
+          type: integer
+          description: Estimated reading time in minutes
+          minimum: 0
+          example: 6
+        
+        categories:
+          type: string
+          description: Comma-separated categories (3-5 recommended)
+          maxLength: 500
+          example: "Programming Languages, Web Development, TypeScript, Documentation"
+        
+        # Author information
+        author:
+          type: string
+          description: Author name
+          maxLength: 200
+          example: "Microsoft TypeScript Team"
+        
+        authorImage:
+          type: string
+          format: uri
+          description: Author image URL
+          pattern: '^https?://'
+          example: "https://example.com/authors/typescript-team.jpg"
+        
+        authorUrl:
+          type: string
+          format: uri
+          description: Author profile URL
+          pattern: '^https?://'
+          example: "https://github.com/microsoft/TypeScript"
+        
+        # Media
+        featuredImage:
+          type: string
+          format: uri
+          description: Featured image URL
+          pattern: '^https?://'
+          example: "https://example.com/images/typescript-intro.png"
+        
+        # Content relationships
+        quotes:
+          type: array
+          description: Notable quotes from the document (max 10)
+          maxItems: 10
+          items:
+            type: string
+            maxLength: 1000
+          example:
+            - "TypeScript is JavaScript with syntax for types."
+            - "Types provide a way to describe the shape of an object."
+        
+        internalLinks:
+          type: array
+          description: Internal document links (max 10)
+          maxItems: 10
+          items:
+            type: string
+            format: uri
+          example:
+            - "https://www.typescriptlang.org/docs/handbook/basic-types.html"
+            - "https://www.typescriptlang.org/docs/handbook/interfaces.html"
+        
+        externalLinks:
+          type: array
+          description: External resource links (max 10)
+          maxItems: 10
+          items:
+            type: string
+            format: uri
+          example:
+            - "https://developer.mozilla.org/en-US/docs/Web/JavaScript"
+            - "https://github.com/microsoft/TypeScript"
+        
+        relatedPosts:
+          type: array
+          description: Related document references (max 10)
+          maxItems: 10
+          items:
+            type: string
+          example:
+            - "Advanced TypeScript Patterns"
+            - "TypeScript Best Practices"
+    
+    UrlReferenceConfig:
+      type: object
+      required:
+        - version
+        - mappings
+      properties:
+        version:
+          type: string
+          description: Schema version
+          pattern: '^\d+\.\d+\.\d+$'
+          example: "2.0.0"
+        
+        mappings:
+          type: array
+          description: Array of URL mappings
+          items:
+            $ref: '#/components/schemas/UrlMapping'
+        
+        metadata:
+          type: object
+          description: Configuration metadata
+          properties:
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
+            author:
+              type: string
+            description:
+              type: string
+
+# Example complete configuration file
+examples:
+  complete-config:
+    summary: Complete configuration example
+    value:
+      version: "2.0.0"
+      metadata:
+        createdAt: "2026-01-15T10:00:00.000Z"
+        updatedAt: "2026-02-20T08:53:01.001Z"
+        author: "Kyle Rode"
+        description: "URL references for blog writing project"
+      mappings:
+        - title: "Getting Started with TypeScript"
+          url: "https://www.typescriptlang.org/docs/handbook/intro.html"
+          localPath: "./docs/typescript-intro.md"
+          lastUpdated: "2026-02-20T08:53:01.001Z"
+          tags: "typescript, javascript, programming, web development"
+          summary: "An introduction to TypeScript's type system and basic concepts."
+          tldr: "TypeScript is a typed superset of JavaScript that compiles to plain JavaScript."
+          wordCount: 1250
+          readingTime: 6
+          categories: "Programming Languages, Web Development, TypeScript"
+          author: "Microsoft TypeScript Team"
+          featuredImage: "https://example.com/images/typescript-intro.png"
+          quotes:
+            - "TypeScript is JavaScript with syntax for types."
+          internalLinks:
+            - "https://www.typescriptlang.org/docs/handbook/basic-types.html"
+          externalLinks:
+            - "https://developer.mozilla.org/en-US/docs/Web/JavaScript"
+

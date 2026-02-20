@@ -1,0 +1,710 @@
+# URL Reference Mapper - API Specification v2.0
+
+openapi: 3.0.0
+info:
+  title: URL Reference Mapper API
+  version: 2.0.0
+  description: |
+    TypeScript/JavaScript API specification for URL Reference Mapper v2.0.
+    This document defines the programmatic API for the @mytechtoday/url-reference package.
+
+components:
+  schemas:
+    # Import from json-schema.yaml
+    UrlMapping:
+      $ref: './json-schema.yaml#/components/schemas/UrlMapping'
+    
+    MapperConfig:
+      type: object
+      properties:
+        configPath:
+          type: string
+          description: Path to JSON/YAML config file
+          example: "./url-references.json"
+        
+        mappings:
+          type: array
+          description: Inline mappings (alternative to configPath)
+          items:
+            $ref: '#/components/schemas/UrlMapping'
+        
+        autoSave:
+          type: boolean
+          description: Auto-save on changes
+          default: false
+        
+        validateOnLoad:
+          type: boolean
+          description: Validate on load
+          default: true
+        
+        allowDuplicates:
+          type: boolean
+          description: Allow duplicate URLs/paths
+          default: false
+        
+        extraction:
+          $ref: '#/components/schemas/ExtractionConfig'
+        
+        validation:
+          $ref: '#/components/schemas/ValidationConfig'
+        
+        backup:
+          $ref: '#/components/schemas/BackupConfig'
+    
+    ExtractionConfig:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+          default: true
+        readingSpeed:
+          type: integer
+          description: Words per minute
+          default: 225
+        maxTags:
+          type: integer
+          default: 35
+        maxQuotes:
+          type: integer
+          default: 10
+        generateSummary:
+          type: boolean
+          default: true
+        aiProvider:
+          type: string
+          description: Optional AI provider for summaries
+          enum: [openai, anthropic, local]
+    
+    ValidationConfig:
+      type: object
+      properties:
+        checkUrls:
+          type: boolean
+          description: Validate URL accessibility
+          default: false
+        checkPaths:
+          type: boolean
+          description: Validate file existence
+          default: true
+        strictMode:
+          type: boolean
+          default: false
+    
+    BackupConfig:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+          default: true
+        maxBackups:
+          type: integer
+          default: 5
+        backupPath:
+          type: string
+          default: "./.backups"
+    
+    ValidationResult:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+        warnings:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationWarning'
+    
+    ValidationError:
+      type: object
+      properties:
+        field:
+          type: string
+        message:
+          type: string
+        code:
+          type: string
+        value:
+          type: string
+    
+    ValidationWarning:
+      type: object
+      properties:
+        field:
+          type: string
+        message:
+          type: string
+        suggestion:
+          type: string
+
+# ============================================================================
+# API METHODS
+# ============================================================================
+
+paths:
+  /UrlReferenceMapper:
+    description: Main class for URL reference management
+    
+    constructor:
+      summary: Create a new UrlReferenceMapper instance
+      parameters:
+        - name: config
+          schema:
+            $ref: '#/components/schemas/MapperConfig'
+          required: false
+      returns:
+        type: UrlReferenceMapper
+      examples:
+        - name: From file
+          code: |
+            const mapper = new UrlReferenceMapper({
+              configPath: './url-references.json'
+            });
+        - name: Inline mappings
+          code: |
+            const mapper = new UrlReferenceMapper({
+              mappings: [
+                { title: 'Example', url: 'https://example.com', localPath: './doc.md', lastUpdated: '2026-02-20T08:53:01.001Z' }
+              ]
+            });
+        - name: With extraction config
+          code: |
+            const mapper = new UrlReferenceMapper({
+              configPath: './url-references.json',
+              extraction: {
+                enabled: true,
+                readingSpeed: 250,
+                maxTags: 40
+              }
+            });
+    
+    methods:
+      # ========================================================================
+      # LOOKUP OPERATIONS
+      # ========================================================================
+      
+      getUrlFromLocalPath:
+        summary: Get URL from local path
+        parameters:
+          - name: localPath
+            type: string
+            required: true
+        returns:
+          type: string | null
+        examples:
+          - code: |
+              const url = mapper.getUrlFromLocalPath('./docs/example.md');
+              // Returns: 'https://example.com/docs/example'
+      
+      getLocalPathFromUrl:
+        summary: Get local path from URL
+        parameters:
+          - name: url
+            type: string
+            required: true
+        returns:
+          type: string | null
+        examples:
+          - code: |
+              const path = mapper.getLocalPathFromUrl('https://example.com/docs/example');
+              // Returns: './docs/example.md'
+
+      getAllMappings:
+        summary: Get all URL mappings
+        parameters: []
+        returns:
+          type: UrlMapping[]
+        examples:
+          - code: |
+              const mappings = mapper.getAllMappings();
+              // Returns: [{ title: '...', url: '...', ... }]
+
+      getMappingByUrl:
+        summary: Get mapping by URL
+        parameters:
+          - name: url
+            type: string
+            required: true
+        returns:
+          type: UrlMapping | null
+        examples:
+          - code: |
+              const mapping = mapper.getMappingByUrl('https://example.com');
+
+      # ========================================================================
+      # CRUD OPERATIONS
+      # ========================================================================
+
+      addMapping:
+        summary: Add a new URL mapping
+        parameters:
+          - name: mapping
+            schema:
+              $ref: '#/components/schemas/UrlMapping'
+            required: true
+        returns:
+          type: void
+        throws:
+          - ValidationError: If mapping is invalid
+          - DuplicateError: If URL already exists (when allowDuplicates is false)
+        examples:
+          - code: |
+              mapper.addMapping({
+                title: 'Example Document',
+                url: 'https://example.com/doc',
+                localPath: './docs/example.md',
+                lastUpdated: new Date().toISOString()
+              });
+
+      addMappingWithExtraction:
+        summary: Add mapping with automatic metadata extraction
+        parameters:
+          - name: url
+            type: string
+            required: true
+          - name: localPath
+            type: string
+            required: true
+          - name: title
+            type: string
+            required: true
+        returns:
+          type: Promise<void>
+        throws:
+          - ExtractionError: If extraction fails
+          - ValidationError: If mapping is invalid
+        examples:
+          - code: |
+              await mapper.addMappingWithExtraction(
+                'https://example.com/doc',
+                './docs/example.md',
+                'Example Document'
+              );
+
+      updateMapping:
+        summary: Update an existing mapping
+        parameters:
+          - name: identifier
+            type: string
+            description: URL or index of mapping to update
+            required: true
+          - name: mapping
+            schema:
+              $ref: '#/components/schemas/UrlMapping'
+            required: true
+        returns:
+          type: void
+        throws:
+          - NotFoundError: If mapping doesn't exist
+          - ValidationError: If updated mapping is invalid
+        examples:
+          - code: |
+              mapper.updateMapping('https://example.com/doc', {
+                title: 'Updated Title',
+                author: 'John Doe'
+              });
+
+      updateMappingWithExtraction:
+        summary: Update mapping with re-extraction
+        parameters:
+          - name: identifier
+            type: string
+            required: true
+          - name: localPath
+            type: string
+            required: false
+        returns:
+          type: Promise<void>
+        examples:
+          - code: |
+              await mapper.updateMappingWithExtraction('https://example.com/doc');
+
+      removeMapping:
+        summary: Remove a mapping
+        parameters:
+          - name: identifier
+            type: string
+            description: URL or index of mapping to remove
+            required: true
+        returns:
+          type: boolean
+        examples:
+          - code: |
+              const removed = mapper.removeMapping('https://example.com/doc');
+              // Returns: true if removed, false if not found
+
+      # ========================================================================
+      # EXTRACTION OPERATIONS
+      # ========================================================================
+
+      extractMetadata:
+        summary: Extract metadata from a document
+        parameters:
+          - name: documentPath
+            type: string
+            required: true
+        returns:
+          type: Promise<Partial<UrlMapping>>
+        throws:
+          - ExtractionError: If extraction fails
+        examples:
+          - code: |
+              const metadata = await mapper.extractMetadata('./docs/example.md');
+              // Returns: { wordCount: 1250, readingTime: 6, tags: '...', ... }
+
+      extractFromMarkdown:
+        summary: Extract metadata from Markdown content
+        parameters:
+          - name: content
+            type: string
+            required: true
+        returns:
+          type: Promise<Partial<UrlMapping>>
+        examples:
+          - code: |
+              const content = fs.readFileSync('./doc.md', 'utf-8');
+              const metadata = await mapper.extractFromMarkdown(content);
+
+      extractFromHtml:
+        summary: Extract metadata from HTML content
+        parameters:
+          - name: content
+            type: string
+            required: true
+        returns:
+          type: Promise<Partial<UrlMapping>>
+        examples:
+          - code: |
+              const html = '<html><body><h1>Title</h1><p>Content...</p></body></html>';
+              const metadata = await mapper.extractFromHtml(html);
+
+      extractFromText:
+        summary: Extract metadata from plain text
+        parameters:
+          - name: content
+            type: string
+            required: true
+        returns:
+          type: Promise<Partial<UrlMapping>>
+        examples:
+          - code: |
+              const text = 'Plain text content...';
+              const metadata = await mapper.extractFromText(text);
+
+      # ========================================================================
+      # FILTERING & CLEANUP
+      # ========================================================================
+
+      filterByDate:
+        summary: Filter mappings by date range
+        parameters:
+          - name: before
+            type: Date
+            required: false
+          - name: after
+            type: Date
+            required: false
+        returns:
+          type: UrlMapping[]
+        examples:
+          - code: |
+              const old = mapper.filterByDate(new Date('2025-01-01'));
+              const recent = mapper.filterByDate(null, new Date('2026-01-01'));
+              const range = mapper.filterByDate(
+                new Date('2025-01-01'),
+                new Date('2025-12-31')
+              );
+
+      filterByProperty:
+        summary: Filter mappings by property value
+        parameters:
+          - name: property
+            type: string
+            required: true
+          - name: value
+            type: string
+            required: true
+        returns:
+          type: UrlMapping[]
+        examples:
+          - code: |
+              const byAuthor = mapper.filterByProperty('author', 'John Doe');
+              const byCategory = mapper.filterByProperty('categories', 'TypeScript');
+
+      removeInvalid:
+        summary: Remove mappings with invalid URLs or paths
+        parameters:
+          - name: options
+            type: object
+            properties:
+              urls:
+                type: boolean
+              paths:
+                type: boolean
+              both:
+                type: boolean
+        returns:
+          type: number
+          description: Number of removed mappings
+        examples:
+          - code: |
+              const removed = mapper.removeInvalid({ urls: true });
+              console.log(`Removed ${removed} invalid entries`);
+
+      # ========================================================================
+      # VALIDATION
+      # ========================================================================
+
+      validate:
+        summary: Validate all mappings
+        parameters:
+          - name: options
+            type: object
+            required: false
+            properties:
+              urls:
+                type: boolean
+              paths:
+                type: boolean
+              metadata:
+                type: boolean
+        returns:
+          schema:
+            $ref: '#/components/schemas/ValidationResult'
+        examples:
+          - code: |
+              const result = mapper.validate();
+              if (!result.valid) {
+                console.error('Validation errors:', result.errors);
+              }
+
+      validateUrls:
+        summary: Validate URLs only
+        returns:
+          schema:
+            $ref: '#/components/schemas/ValidationResult'
+
+      validatePaths:
+        summary: Validate file paths only
+        returns:
+          schema:
+            $ref: '#/components/schemas/ValidationResult'
+
+      validateMetadata:
+        summary: Validate metadata only
+        returns:
+          schema:
+            $ref: '#/components/schemas/ValidationResult'
+
+      # ========================================================================
+      # PERSISTENCE
+      # ========================================================================
+
+      save:
+        summary: Save mappings to config file
+        parameters: []
+        returns:
+          type: void
+        throws:
+          - IOError: If save fails
+        examples:
+          - code: |
+              mapper.addMapping({ ... });
+              mapper.save();
+
+      load:
+        summary: Load mappings from config file
+        parameters:
+          - name: configPath
+            type: string
+            required: false
+        returns:
+          type: void
+        throws:
+          - IOError: If load fails
+          - ValidationError: If config is invalid
+        examples:
+          - code: |
+              mapper.load('./custom-config.json');
+
+      # ========================================================================
+      # IMPORT/EXPORT
+      # ========================================================================
+
+      exportToCsv:
+        summary: Export mappings to CSV
+        parameters:
+          - name: outputPath
+            type: string
+            required: true
+          - name: options
+            type: object
+            properties:
+              fields:
+                type: string[]
+                description: Fields to export
+        returns:
+          type: void
+        examples:
+          - code: |
+              mapper.exportToCsv('./references.csv');
+              mapper.exportToCsv('./refs.csv', { fields: ['title', 'url', 'author'] });
+
+      importFromCsv:
+        summary: Import mappings from CSV
+        parameters:
+          - name: inputPath
+            type: string
+            required: true
+          - name: merge
+            type: boolean
+            default: false
+        returns:
+          type: void
+        throws:
+          - IOError: If file not found
+          - ValidationError: If CSV is invalid
+        examples:
+          - code: |
+              mapper.importFromCsv('./references.csv');
+              mapper.importFromCsv('./refs.csv', true); // merge
+
+      export:
+        summary: Export to specified format
+        parameters:
+          - name: format
+            type: string
+            enum: [json, yaml, csv]
+            required: true
+        returns:
+          type: string
+        examples:
+          - code: |
+              const json = mapper.export('json');
+              const yaml = mapper.export('yaml');
+              const csv = mapper.export('csv');
+
+# ============================================================================
+# USAGE EXAMPLES
+# ============================================================================
+
+examples:
+  basic_usage:
+    summary: Basic usage example
+    code: |
+      import { UrlReferenceMapper } from '@mytechtoday/url-reference';
+
+      // Create mapper
+      const mapper = new UrlReferenceMapper({
+        configPath: './url-references.json'
+      });
+
+      // Add mapping
+      mapper.addMapping({
+        title: 'TypeScript Handbook',
+        url: 'https://www.typescriptlang.org/docs/handbook/intro.html',
+        localPath: './docs/typescript-intro.md',
+        lastUpdated: new Date().toISOString()
+      });
+
+      // Lookup
+      const url = mapper.getUrlFromLocalPath('./docs/typescript-intro.md');
+      console.log(url); // https://www.typescriptlang.org/docs/handbook/intro.html
+
+      // Save
+      mapper.save();
+
+  extraction_usage:
+    summary: Metadata extraction example
+    code: |
+      import { UrlReferenceMapper } from '@mytechtoday/url-reference';
+
+      const mapper = new UrlReferenceMapper({
+        configPath: './url-references.json',
+        extraction: {
+          enabled: true,
+          readingSpeed: 250
+        }
+      });
+
+      // Add with extraction
+      await mapper.addMappingWithExtraction(
+        'https://example.com/doc',
+        './docs/example.md',
+        'Example Document'
+      );
+
+      // Manual extraction
+      const metadata = await mapper.extractMetadata('./docs/another.md');
+      console.log(metadata);
+      // {
+      //   wordCount: 1250,
+      //   readingTime: 5,
+      //   tags: 'typescript, javascript, ...',
+      //   summary: 'A comprehensive guide to...',
+      //   ...
+      // }
+
+      mapper.save();
+
+  validation_usage:
+    summary: Validation example
+    code: |
+      import { UrlReferenceMapper } from '@mytechtoday/url-reference';
+
+      const mapper = new UrlReferenceMapper({
+        configPath: './url-references.json'
+      });
+
+      // Validate all
+      const result = mapper.validate();
+
+      if (!result.valid) {
+        console.error('Validation errors:');
+        result.errors.forEach(error => {
+          console.error(`  ${error.field}: ${error.message}`);
+        });
+      }
+
+      if (result.warnings.length > 0) {
+        console.warn('Warnings:');
+        result.warnings.forEach(warning => {
+          console.warn(`  ${warning.field}: ${warning.message}`);
+        });
+      }
+
+      // Remove invalid entries
+      const removed = mapper.removeInvalid({ urls: true, paths: true });
+      console.log(`Removed ${removed} invalid entries`);
+
+      mapper.save();
+
+  cleanup_usage:
+    summary: Cleanup operations example
+    code: |
+      import { UrlReferenceMapper } from '@mytechtoday/url-reference';
+
+      const mapper = new UrlReferenceMapper({
+        configPath: './url-references.json'
+      });
+
+      // Remove old entries
+      const oldEntries = mapper.filterByDate(new Date('2024-01-01'));
+      oldEntries.forEach(entry => {
+        mapper.removeMapping(entry.url);
+      });
+
+      // Remove by author
+      const byAuthor = mapper.filterByProperty('author', 'Deprecated Author');
+      byAuthor.forEach(entry => {
+        mapper.removeMapping(entry.url);
+      });
+
+      // Remove invalid
+      mapper.removeInvalid({ urls: true, paths: true });
+
+      mapper.save();
+      console.log('Cleanup complete');

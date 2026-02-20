@@ -1,0 +1,286 @@
+openapi: 3.1.0
+info:
+  title: URL Reference Mapper - Utility Commands Specification
+  version: 2.0.0
+  description: |
+    Specification for utility commands: version, license, credits, sponsor, donate, doctor, uninstall
+  contact:
+    name: MyTech.Today
+    url: https://github.com/mytech-today-now/url-reference
+
+components:
+  schemas:
+    VersionInfo:
+      type: object
+      properties:
+        package:
+          type: string
+          example: "@mytechtoday/url-reference-mapper"
+        version:
+          type: string
+          example: "2.0.0"
+        cliVersion:
+          type: string
+          example: "2.0.0"
+        nodeVersion:
+          type: string
+          example: "v20.10.0"
+        platform:
+          type: string
+          example: "win32"
+        dependencies:
+          type: object
+          additionalProperties:
+            type: string
+
+    LicenseInfo:
+      type: object
+      properties:
+        type:
+          type: string
+          example: "MIT"
+        text:
+          type: string
+          description: Full license text
+        file:
+          type: string
+          description: License file path
+        copyright:
+          type: string
+          example: "Copyright (c) 2026 MyTech.Today"
+
+    CreditsInfo:
+      type: object
+      properties:
+        author:
+          type: string
+          example: "MyTech.Today"
+        contributors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Contributor'
+        dependencies:
+          type: array
+          items:
+            $ref: '#/components/schemas/Dependency'
+
+    Contributor:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        url:
+          type: string
+        contributions:
+          type: array
+          items:
+            type: string
+
+    Dependency:
+      type: object
+      properties:
+        name:
+          type: string
+        version:
+          type: string
+        license:
+          type: string
+        author:
+          type: string
+
+    DiagnosticReport:
+      type: object
+      properties:
+        summary:
+          $ref: '#/components/schemas/DiagnosticSummary'
+        checks:
+          type: array
+          items:
+            $ref: '#/components/schemas/CheckResult'
+
+    DiagnosticSummary:
+      type: object
+      properties:
+        total:
+          type: integer
+        passed:
+          type: integer
+        failed:
+          type: integer
+        warnings:
+          type: integer
+
+    CheckResult:
+      type: object
+      properties:
+        name:
+          type: string
+        passed:
+          type: boolean
+        message:
+          type: string
+        severity:
+          type: string
+          enum: [error, warning, info]
+        fixable:
+          type: boolean
+        fixed:
+          type: boolean
+
+paths:
+  /cli/version:
+    get:
+      summary: Get version information
+      parameters:
+        - name: json
+          in: query
+          schema:
+            type: boolean
+        - name: verbose
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Version information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VersionInfo'
+
+  /cli/license:
+    get:
+      summary: Get license information
+      parameters:
+        - name: verbose
+          in: query
+          schema:
+            type: boolean
+        - name: quiet
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: License information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LicenseInfo'
+
+  /cli/credits:
+    get:
+      summary: Get credits information
+      responses:
+        '200':
+          description: Credits information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreditsInfo'
+
+  /cli/doctor:
+    post:
+      summary: Run diagnostics
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fix:
+                  type: boolean
+                  default: false
+      responses:
+        '200':
+          description: Diagnostic report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiagnosticReport'
+
+# Command Specifications
+x-commands:
+  version:
+    usage: "url-ref version [options]"
+    options:
+      - "--json: Output in JSON format"
+      - "--verbose: Include dependency versions"
+      - "-h: Show brief help"
+      - "--help: Show detailed help"
+    examples:
+      - "url-ref version"
+      - "url-ref version --json"
+      - "url-ref version --verbose"
+    exit-codes:
+      0: Success
+
+  license:
+    usage: "url-ref license [options]"
+    options:
+      - "--verbose: Include dependency licenses"
+      - "--quiet: Just show license type"
+      - "--json: Output in JSON format"
+      - "--interactive: Interactive license viewer"
+      - "-h: Show brief help"
+      - "--help: Show detailed help"
+    examples:
+      - "url-ref license"
+      - "url-ref license --verbose"
+      - "url-ref license --quiet"
+    exit-codes:
+      0: Success
+      1: License file not found
+
+  doctor:
+    usage: "url-ref doctor [options]"
+    description: "Diagnose and fix common issues"
+    checks:
+      - ConfigFileCheck: Validates configuration file
+      - NodeVersionCheck: Checks Node.js version compatibility
+      - DependencyCheck: Verifies all dependencies installed
+      - FilePathCheck: Validates file paths in config
+      - UrlCheck: Tests URL accessibility (optional)
+      - PermissionCheck: Checks file permissions
+      - DiskSpaceCheck: Verifies sufficient disk space
+    options:
+      - "--fix: Automatically fix issues where possible"
+      - "--verbose: Detailed diagnostic output"
+      - "--quiet: Only show summary"
+      - "--json: Output in JSON format"
+      - "-h: Show brief help"
+      - "--help: Show detailed help"
+    examples:
+      - "url-ref doctor"
+      - "url-ref doctor --fix"
+      - "url-ref doctor --verbose"
+    exit-codes:
+      0: All checks passed
+      1: Some checks failed
+      2: Critical errors found
+
+  uninstall:
+    usage: "url-ref uninstall [options]"
+    description: "Remove the package and optionally clean up configuration"
+    options:
+      - "--yes, -y: Auto-confirm uninstall"
+      - "--no, -n: Auto-cancel uninstall"
+      - "--force, -f: Force uninstall even with errors"
+      - "--keep-config: Keep configuration files"
+      - "--keep-backups: Keep backup files"
+      - "--verbose: Detailed uninstall output"
+      - "--quiet: No output except errors"
+      - "--json: Output in JSON format"
+      - "-h: Show brief help"
+      - "--help: Show detailed help"
+    examples:
+      - "url-ref uninstall"
+      - "url-ref uninstall --yes"
+      - "url-ref uninstall --keep-config"
+    exit-codes:
+      0: Successfully uninstalled
+      1: Uninstall cancelled
+      2: Uninstall failed
+
