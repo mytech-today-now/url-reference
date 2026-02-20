@@ -1,0 +1,51 @@
+{
+  "version": "0.1.0",
+  "modules": [
+    {
+      "name": "coding-standards/js",
+      "version": "1.0.0",
+      "type": "coding-standards",
+      "description": "Comprehensive JavaScript coding standards for modern web development with ES6+, DOM manipulation, async patterns, and framework integration"
+    },
+    {
+      "name": "coding-standards/typescript",
+      "version": "1.0.0",
+      "type": "coding-standards",
+      "description": "Comprehensive TypeScript coding standards and best practices"
+    },
+    {
+      "name": "domain-rules/api-design",
+      "version": "1.0.0",
+      "type": "domain-rules",
+      "description": "Comprehensive API design guidelines including REST, GraphQL, versioning, and best practices"
+    },
+    {
+      "name": "examples/design-patterns",
+      "version": "1.0.0",
+      "type": "examples",
+      "description": "Common design patterns with TypeScript/JavaScript implementations and use cases"
+    },
+    {
+      "name": "examples/rest-api-plugin",
+      "version": "1.0.0",
+      "type": "examples",
+      "description": "Complete REST API plugin examples with custom endpoints (GET, POST, PUT, DELETE), authentication, validation, error handling, and JavaScript client examples"
+    },
+    {
+      "name": "workflows/beads",
+      "version": "1.0.0",
+      "type": "workflows",
+      "description": "Distributed, git-backed graph issue tracker for AI agents. Provides persistent, structured memory for coding agents with dependency tracking."
+    },
+    {
+      "name": "workflows/beads-integration",
+      "version": "1.0.0",
+      "type": "workflow",
+      "description": "Comprehensive guidelines and automation for AI-driven Beads task generation, OpenSpec decomposition, and workflow integration"
+    }
+  ],
+  "settings": {
+    "autoUpdate": false,
+    "checkUpdatesOnInit": true
+  }
+}
