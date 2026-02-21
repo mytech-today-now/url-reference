@@ -36,3 +36,11 @@ export {
 
 // Package version
 export { VERSION } from './version';
+
+// Validators
+export {
+  UrlValidator,
+  UrlValidatorConfig,
+  PathValidator,
+  PathValidatorConfig,
+} from './validators';

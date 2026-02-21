@@ -34,9 +34,9 @@ export class HtmlExtractor extends BaseExtractor {
         if (meta.author) metadata.author = meta.author;
         if (meta.description) metadata.summary = meta.description;
         if (meta.keywords) {
-          const keywords = Array.isArray(meta.keywords) 
-            ? meta.keywords 
-            : meta.keywords.split(',').map(k => k.trim());
+          const keywords = Array.isArray(meta.keywords)
+            ? meta.keywords
+            : (meta.keywords as string).split(',').map((k: string) => k.trim());
           metadata.tags = keywords.slice(0, this.config.maxTags || 35).join(', ');
         }
         
