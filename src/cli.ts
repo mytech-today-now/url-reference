@@ -7,6 +7,7 @@ import { UrlReferenceMapper } from './UrlReferenceMapper';
 import { UrlMapping, ExportFormat } from './types';
 import * as yaml from 'js-yaml';
 import { VERSION } from './version';
+import { migrateConfigFile } from './utils/migration';
 
 const program = new Command();
 
@@ -427,6 +428,44 @@ program
   .action(() => {
     console.log(`url-ref-mapper version ${VERSION}`);
     console.log(`Package: @mytechtoday/url-reference-mapper`);
+  });
+
+// Migrate command
+program
+  .command('migrate <input> <output>')
+  .description('Migrate configuration from v1.0 to v2.0 format')
+  .option('--no-backup', 'Skip backup creation')
+  .option('--backup-dir <dir>', 'Backup directory', './.backups')
+  .action((input, output, options) => {
+    console.log(`Migrating ${input} to ${output}...`);
+
+    const result = migrateConfigFile(input, output, {
+      backup: options.backup,
+      backupDir: options.backupDir,
+    });
+
+    if (result.backupPath) {
+      console.log(`✓ Backup created: ${result.backupPath}`);
+    }
+
+    if (result.warnings.length > 0) {
+      console.log('\nWarnings:');
+      result.warnings.forEach(w => console.log(`  ⚠ ${w}`));
+    }
+
+    if (result.errors.length > 0) {
+      console.log('\nErrors:');
+      result.errors.forEach(e => console.log(`  ✗ ${e}`));
+      process.exit(1);
+    }
+
+    if (result.success) {
+      console.log(`\n✓ Successfully migrated ${result.migratedCount} mapping(s)`);
+      console.log(`✓ Output saved to: ${output}`);
+    } else {
+      console.error('\n✗ Migration failed');
+      process.exit(1);
+    }
   });
 
 program.parse();

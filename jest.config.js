@@ -6,6 +6,9 @@ module.exports = {
   transform: {
     '^.+\\.ts$': 'ts-jest',
   },
+  transformIgnorePatterns: [
+    'node_modules/(?!(unified|remark-parse|remark-stringify|remark-frontmatter|micromark|mdast-util-from-markdown|mdast-util-to-markdown|mdast-util-frontmatter|unist-util-visit|unist-util-is|unist-util-stringify-position|bail|is-plain-obj|trough|vfile|vfile-message)/)',
+  ],
   collectCoverageFrom: [
     'src/**/*.ts',
     '!src/**/*.d.ts',
